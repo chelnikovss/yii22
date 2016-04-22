@@ -1,0 +1,52 @@
+body{
+    /*background-image: url(../img/mail.png) ;*/
+    /*background-repeat: no-repeat;*/
+
+    /*background-color: rgba(117,117, 85, .4);*/
+    /*background-size: 100px 50px;*/
+    /*background-position: 40% 1%;*/
+
+}
+.layout{
+    margin: 15px 0;
+    overflow: hidden;
+    min-width: 1000px;
+    max-width: 1400px;
+}
+.map-content{
+    width:700px;
+    float: left;
+}
+.content{
+    margin-left:700px;
+    font-size: 30px;
+    padding: 20px;
+}
+.map{
+    width:620px;
+    height: 620px;
+    padding: 20px;
+}
+#res, #resTime{
+    font-size: 30px;
+    color: green;
+    font-weight: bold;
+}
+.res-dist{
+    display: none;
+}
+.res-dist h2{
+    display: none;
+}
+.office-route{
+    display: none;
+    font-size: 20px;
+    padding: 10px;
+}
+.office-route_title{
+    margin-bottom: 20px;
+}
+.map-content_title{
+    font-size: 30px;
+    padding: 20px;
+}
