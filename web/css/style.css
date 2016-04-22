@@ -19,8 +19,11 @@ body{
 }
 .content{
     margin-left:700px;
-    font-size: 30px;
+    font-size: 20px;
     padding: 20px;
+}
+.route-main{
+    margin-bottom: 30px;
 }
 .map{
     width:620px;
@@ -28,7 +31,7 @@ body{
     padding: 20px;
 }
 #res, #resTime{
-    font-size: 30px;
+    font-size: 20px;
     color: green;
     font-weight: bold;
 }
@@ -49,4 +52,12 @@ body{
 .map-content_title{
     font-size: 30px;
     padding: 20px;
+}
+.list-post-Offices select, .list-post-Offices input  {
+    margin-bottom: 30px;
+}
+.route-add{
+    margin-top: 20px;
+}.route-add input{
+    margin-top: 20px;
 }

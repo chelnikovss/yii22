@@ -7,11 +7,14 @@ $this->title = 'Система расчет маршрута';
 <div class="site-index">
 
     <div class="jumbotron">
-        <h1>Congratulations!</h1>
+        <h1>Система расчет маршрута</h1>
 
-        <p class="lead">You have successfully created your Yii-powered application.</p>
+        <p class="lead">Позволяет рассчитать расстояние и время между отделениями связи.</p>
+        <p class="lead">А также показывает маршрут на карте google.</p>
 
-        <p><a class="btn btn-lg btn-success" href="http://www.yiiframework.com">Get started with Yii</a></p>
+<!--        <p><a class="btn btn-lg btn-success" href="http://www.yiiframework.com">Get started with Yii</a></p>-->
+        <p><a class="btn btn-lg btn-success" href="<?php echo \Yii::$app->request->BaseUrl;?>?r=site/login">Войти</a></p>
+<!--        <p>--><?php //echo Url::toRoute(['site/index'], ['class' => 'btn btn-lg btn-success']); ?><!--</p>-->
     </div>
 
     <div class="body-content">

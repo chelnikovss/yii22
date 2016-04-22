@@ -11,7 +11,7 @@ $this->params['breadcrumbs'][] = $this->title;
     </div>
     <div class="content">
         <div class="route-calc">
-            <div>Маршрут</div>
+            <div class="route-main">Маршрут</div>
             <div class="list-post-Offices">
                 <form id="offices" method="post">
                     <select name="officesPost">

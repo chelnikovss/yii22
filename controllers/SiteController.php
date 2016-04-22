@@ -106,18 +106,30 @@ class SiteController extends Controller
                 $id = $dataIdCity[0];
                 $tableName = $dataIdCity[1];
 
-                //Lugansk::tableName($dataIdCity[1]);
-
                 if($tableName =='lugansk')
                 {
                     $office = Lugansk::find()->where(['id' => $id])->asArray()->one();
                 }
                 $this->getLocationMail($office);
 
-
-                return;
             }
-            echo 111;
+            elseif (Yii::$app->request->post('calcTrackTime')){
+                //echo "post('calcTrackTime')";
+                $calcTrackTime = Yii::$app->request->post('calcTrackTime');
+                $routepost = serialize($calcTrackTime['routepost']);
+                // INSERT (table name, column values)
+                $res = Yii::$app->db->createCommand()->insert(
+                    'route', [
+                    'id' => '',
+                    'numberoute' => $calcTrackTime['numberoute'],
+                    'routepost' => $calcTrackTime['routepost'],
+                    'track' => $calcTrackTime['track'],
+                    'time' => $calcTrackTime['time']
+                ])->execute();
+
+                echo $res;
+            }
+            
             return;
 
         }
