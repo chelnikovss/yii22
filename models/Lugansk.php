@@ -11,6 +11,6 @@ class Lugansk extends ActiveRecord
     //Вам не нужно писать ни строчки кода внутри него!
     //С кодом, приведённым выше, Yii свяжет имя таблицы с именем класса.
     //protected static $table;
-    //111
+    
  
 }
