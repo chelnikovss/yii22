@@ -151,11 +151,6 @@ $(document).ready(function () {
 
     //TODO:: jquery-ajax-submit-form
     $("#offices").submit(function (e) {
-
-        //var userId = '<?php $userid? >';
-        //var url = '<?php echo \Yii::$app->getUrlManager()->createUrl(controllers/LuganskController'+') ?>';
-        //var form = $(this);
-        //var url = form.attr('Coord');
         var url = '?r=site/main';
         $.ajax({
             type: "POST",
@@ -284,12 +279,37 @@ $(document).ready(function () {
             url: url,
             data: {calcTrackTime: calcTrackTime},
             success: function (data) {
+
                 console.log("data ", data);
-                if(data==true){
-                    alert("Маршрут добавлен ")
+
+                if(data == false)
+                    var message = 'Ошибка маршрут не добавлен !';
+                else if(data == true)
+                    var message = 'Маршрут добавлен !';
+                else
+                    var message = data;
+
+                if(data==true)
+                {
+                    //http://bootboxjs.com/examples.html
+                    //http://stackoverflow.com/questions/15246320/change-css-in-a-bootbox-window
+                    var erModal = bootbox.alert({
+                        message: message,
+                        callback: function() {setTimeout(function () { location.reload(); },1000); }
+                    });
+                    erModal.find('.modal-content').css({'background-color':'#dff0d8','color':'#3c763d'});
+                    erModal.find('.btn-primary').removeClass("btn-primary").addClass("btn-success");
                 }
-                else{
-                    alert("Ошибка ")
+                else
+                {
+
+
+                    var erModal = bootbox.alert({
+                        message: message,
+                        callback: function() {console.log("error bootbox.alert Callback");}
+                    });
+                    erModal.find('.modal-content').css({'background-color':'#f99'});
+                    erModal.find('.btn-primary').removeClass("btn-primary").addClass("btn-danger");
                 }
             }
         })
@@ -297,5 +317,8 @@ $(document).ready(function () {
         e.preventDefault();
 
     });
+    function ff() {
+        alert(dsd);
+    }
 
 });

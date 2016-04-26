@@ -37,7 +37,8 @@ AppAsset::register($this);
         'options' => ['class' => 'navbar-nav navbar-right'],
         'items' => [
             ['label' => 'Расчет маршрута', 'url' => ['/site/main']],
-            ['label' => 'Home', 'url' => ['/site/index']],
+//            ['label' => 'Home', 'url' => ['/site/index']],
+            ['label' => 'Стандартные маршруты', 'url' => ['/route/gtroutes']],
             ['label' => 'About', 'url' => ['/site/about']],
             ['label' => 'Contact', 'url' => ['/site/contact']],
 

@@ -1,8 +1,10 @@
 <?php
 use yii\helpers\Html;
+use yii\widgets\ActiveForm;
 
 $this->title = 'Главная';
 $this->params['breadcrumbs'][] = $this->title;
+
 ?>
 <div class="layout">
     <div class="map-content">
@@ -16,6 +18,11 @@ $this->params['breadcrumbs'][] = $this->title;
                 <form id="offices" method="post">
                     <select name="officesPost">
                         <option selected disabled>Выберите отделение почты</option>
+                        <optgroup label="Точка отправления">
+                            <option value="2|lugansk">Первая</option>
+                            <option value="3|lugansk">Вторая</option>
+                            <option value="7|lugansk">Третья</option>
+                        </optgroup>
                         <optgroup label="Луганск">
                             <option value="2|lugansk">Луганск 2 91002</option>
                             <option value="3|lugansk">Луганск 4 91004</option>
@@ -40,7 +47,7 @@ $this->params['breadcrumbs'][] = $this->title;
         <div class="route-add">
             <form id="add-route" action="">
                 <label for="number">Номер маршрута
-                    <input id="number" type="number" min="1" max="201" required/>
+                    <input id="number" type="number" name="number" min="1" max="201" required/>
                 </label>
                 <input type="submit" value="Запомнить маршрут" />
             </form>

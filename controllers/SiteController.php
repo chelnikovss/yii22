@@ -2,6 +2,7 @@
 
 namespace app\controllers;
 
+use app\models\Route;
 use Yii;
 use yii\filters\AccessControl;
 use yii\web\Controller;
@@ -9,6 +10,9 @@ use yii\filters\VerbFilter;
 use app\models\LoginForm;
 use app\models\ContactForm;
 use app\models\Lugansk;
+
+use yii\web\Response;
+
 
 class SiteController extends Controller
 {
@@ -98,6 +102,8 @@ class SiteController extends Controller
     }
     public function actionMain()
     {
+        $model = new Route();
+
         if(Yii::$app->request->isAjax){
 
             if(Yii::$app->request->post('officesPost'))
@@ -114,10 +120,21 @@ class SiteController extends Controller
 
             }
             elseif (Yii::$app->request->post('calcTrackTime')){
-                //echo "post('calcTrackTime')";
+                //  if (Yii::$app->request->isAjax && $model->load(Yii::$app->request->post()))
+                Yii::$app->response->format = Response::FORMAT_JSON;
                 $calcTrackTime = Yii::$app->request->post('calcTrackTime');
-                $routepost = serialize($calcTrackTime['routepost']);
+                //если такой маршрут есть
+                $numberRoute = Route::findOne(['numberoute' => $calcTrackTime['numberoute']]);
+                if($numberRoute != NULL)
+                {
+                    //echo "Маршрут с номером: ".$calcTrackTime['numberoute']." уже есть";
+                    return "Маршрут с номером: ".$calcTrackTime['numberoute']." уже есть";
+                }
+
+                //return ActiveForm::validate($model);
+                //$routepost = serialize($calcTrackTime['routepost']);
                 // INSERT (table name, column values)
+
                 $res = Yii::$app->db->createCommand()->insert(
                     'route', [
                     'id' => '',
@@ -134,7 +151,7 @@ class SiteController extends Controller
 
         }
 
-        return $this->render('main');
+        return $this->render('main',['model' => $model]);
     }
     public function converting($dataPost){
         return explode('|', $dataPost);
