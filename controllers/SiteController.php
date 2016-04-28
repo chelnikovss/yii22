@@ -102,7 +102,7 @@ class SiteController extends Controller
     }
     public function actionMain()
     {
-        $model = new Route();
+        //$model = new Route();
 
         if(Yii::$app->request->isAjax){
 
@@ -141,7 +141,8 @@ class SiteController extends Controller
                     'numberoute' => $calcTrackTime['numberoute'],
                     'routepost' => $calcTrackTime['routepost'],
                     'track' => $calcTrackTime['track'],
-                    'time' => $calcTrackTime['time']
+                    'time' => $calcTrackTime['time'],
+                    'parametersroute' => $calcTrackTime['parametersroute'],
                 ])->execute();
 
                 echo $res;
@@ -160,6 +161,7 @@ class SiteController extends Controller
         $coordinate['latlocation'] = $res['latlocation'];
         $coordinate['lnglocation'] = $res['lnglocation'];
         $coordinate['indexmail'] = $res['indexmail'];
+        $coordinate['addressDesc'] = $res['addressDesc'];
 
         echo json_encode($coordinate);
     }

@@ -36,6 +36,27 @@ class RouteController extends Controller
             $routes[$i]['routepost'] = $indexmail;
             $indexmail ="";
         }
+        if(Yii::$app->request->isAjax)
+        {
+            if(Yii::$app->request->post('checkInput'))
+            {
+                $arrayId = Yii::$app->request->post('checkInput');
+                $xlsx = [];
+                //$office = Lugansk::find()->where(['id' => $id])->asArray()->one();
+                for($i=0, $j = count($arrayId);$i<$j;$i++)
+                {
+                    $route = Route::find()->where(['id' => $arrayId[$i]])->asArray()->one();
+                    $xlsx[] = $route;
+                }
+                var_dump($xlsx);
+                return;
+            }
+
+
+
+        }
+
+
         return $this->render('gtroutes',['routes'=>$routes]);
     }
 }

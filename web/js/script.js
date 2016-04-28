@@ -8,6 +8,7 @@ $(document).ready(function () {
 
     var coordinate = [];
     var allOffice = [];
+    var allDistanceTime = [];
     var calcTrackTime = {};
 
     function initialize() {
@@ -173,6 +174,7 @@ $(document).ready(function () {
         addOffice.lat = office.latlocation;
         addOffice.lng = office.lnglocation;
         addOffice.indexmail = office.indexmail;
+        addOffice.addressDesc = office.addressDesc;
         allOffice.push(addOffice);
 
         addMarker(addOffice, office.indexmail);
@@ -230,6 +232,13 @@ $(document).ready(function () {
             console.log("start:",start, " end:", end);
             distanceCount(start, end, function (info) {
                 console.log("distanceCount");
+                console.log("info.distance:",info.distance);
+
+                var distanceTime = {};
+                distanceTime.distance = info.distance;
+                distanceTime.parkingTime = "0:05";
+                allDistanceTime.push(distanceTime);
+
                 sumDistance += info.distance;
                 sumTime += info.time;
                 console.log("sumDistance:",sumDistance);
@@ -237,6 +246,7 @@ $(document).ready(function () {
                 var distanceFormat = sumDistance/1000;
                 $("#res").html(distanceFormat+" км");
                 $("#resTime").html(timeFormat+" Час:Мин:Сек");
+
 
                 //this data for save basedata
                 calcTrackTime.track = distanceFormat;
@@ -246,11 +256,12 @@ $(document).ready(function () {
         drawRouteBetweenMarker(allOffice);
         $('.res-dist h2').show();
         $('.office-route').css({'color':'green','font-weight':'bold','font-size': '30px'});
+
     });
 
     $('#add-route').submit(function (e) {
 
-        console.log("#add-route click","allOffice: ",allOffice,"calcTrackTime: ",calcTrackTime);
+        console.log("#add-route click","allOffice: ",allOffice,"calcTrackTime: ",calcTrackTime,"allDistanceTime: ",allDistanceTime);
 
         var indexMail = [];
 
@@ -258,15 +269,17 @@ $(document).ready(function () {
         {
             var index = {};
             index.indexmail = allOffice[i].indexmail;
+            index.addressDesc = allOffice[i].addressDesc;
             indexMail.push(index);
         }
         console.log("indexMail: ",indexMail);
 
         var jsonIndexMail =  JSON.stringify(indexMail);
-
-        console.log("jsonIndexMail: ",jsonIndexMail);
+        var allDistanceTimeTemp =  JSON.stringify(allDistanceTime);
+        console.log("JSON.stringify allDistanceTimeTemp: ",allDistanceTimeTemp,"jsonIndexMail: ",jsonIndexMail);
 
         calcTrackTime.routepost = jsonIndexMail;
+        calcTrackTime.parametersroute = allDistanceTimeTemp;
 
         calcTrackTime.numberoute = $('#number').val();
 
@@ -279,31 +292,31 @@ $(document).ready(function () {
             url: url,
             data: {calcTrackTime: calcTrackTime},
             success: function (data) {
-
+        
                 console.log("data ", data);
-
+        
                 if(data == false)
                     var message = 'Ошибка маршрут не добавлен !';
                 else if(data == true)
                     var message = 'Маршрут добавлен !';
                 else
                     var message = data;
-
+        
                 if(data==true)
                 {
                     //http://bootboxjs.com/examples.html
                     //http://stackoverflow.com/questions/15246320/change-css-in-a-bootbox-window
                     var erModal = bootbox.alert({
                         message: message,
-                        callback: function() {setTimeout(function () { location.reload(); },1000); }
+                        callback: function() {
+                           // setTimeout(function () { location.reload(); },1000);
+                        }
                     });
                     erModal.find('.modal-content').css({'background-color':'#dff0d8','color':'#3c763d'});
                     erModal.find('.btn-primary').removeClass("btn-primary").addClass("btn-success");
                 }
                 else
                 {
-
-
                     var erModal = bootbox.alert({
                         message: message,
                         callback: function() {console.log("error bootbox.alert Callback");}
@@ -317,8 +330,43 @@ $(document).ready(function () {
         e.preventDefault();
 
     });
-    function ff() {
-        alert(dsd);
-    }
 
+    //////////////////////
+    //// start click input
+    //////////
+    var routeInputId = [];
+    $("input.route-input ").click(function(event) {
+        //console.log(event.target.id);
+        if(jQuery.inArray(event.target.id, routeInputId) == -1)
+        {
+            routeInputId.push(event.target.id);
+        }
+    });
+    $('#createXlsx').click(function () {
+
+        let checkInput = [];
+        console.log("checkInput before check",checkInput,"#createXlsx click","routeInputId: ", routeInputId);
+        for(let i = 0, j = routeInputId.length; i<j;i++)
+        {
+            if($("#"+routeInputId[i]+"").is(':checked'))
+            {
+                checkInput.push(routeInputId[i]);
+            }
+        }
+        console.log("checkInput after check",checkInput);
+        var url = '?r=route/gtroutes';
+        $.ajax({
+            type: "POST",
+            url: url,
+            //dataType: "json",
+            data: {checkInput: checkInput},
+            success: function (data) {
+                var office = JSON.parse(data);
+            }
+        });
+
+    });
+    //////////////////////
+    //// end click input
+    //////////
 });

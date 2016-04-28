@@ -22,8 +22,7 @@ class AppAsset extends AssetBundle
         'css/style.css',
     ];
     public $js = [
-        'http://maps.google.com/maps/api/js?key=AIzaSyC2URhf2NqG8Sj_ek-Q2LY3zheCXvtPhm0&callback=ff',
-        //'http://maps.google.com/maps/api/js?key=AIzaSyC2URhf2NqG8Sj_ek-Q2LY3zheCXvtPhm0',
+        'http://maps.google.com/maps/api/js?key=AIzaSyC2URhf2NqG8Sj_ek-Q2LY3zheCXvtPhm0&callback=initialize',
         'js/script.js',
         'js/function.js',
         'js/bootbox.min.js',
