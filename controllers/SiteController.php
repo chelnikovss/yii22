@@ -152,7 +152,7 @@ class SiteController extends Controller
 
         }
 
-        return $this->render('main',['model' => $model]);
+        return $this->render('main');
     }
     public function converting($dataPost){
         return explode('|', $dataPost);

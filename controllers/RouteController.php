@@ -26,6 +26,9 @@ class RouteController extends Controller
     {
         $routes = Route::find()->all();
         $indexmail ="";
+
+
+
         for($i=0;$i<count($routes);$i++)
         {
             $r = (json_decode($routes[$i]['routepost']));
@@ -41,22 +44,78 @@ class RouteController extends Controller
             if(Yii::$app->request->post('checkInput'))
             {
                 $arrayId = Yii::$app->request->post('checkInput');
-                $xlsx = [];
-                //$office = Lugansk::find()->where(['id' => $id])->asArray()->one();
-                for($i=0, $j = count($arrayId);$i<$j;$i++)
+
+                $inputFileName = './patternxsl/pattern.xlsx';
+                // Loading a Workbook from a file
+                $objPHPExcel = \PHPExcel_IOFactory::load($inputFileName);
+
+                /*  ------ start phpexsel   */
+                //https://github.com/PHPOffice/PHPExcel/blob/develop/Documentation/markdown/Overview/03-Creating-a-Spreadsheet.md
+
+                /*array(6) {
+                ["id"]=> string(2) "62"
+                ["numberoute"]=> string(1) "5"
+                ["routepost"]=> string(265) "[{"indexmail":"91002","addressDesc":"г. Луганск, ул.Артема, 183"},{"indexmail":"91007","addressDesc":"г. Луганск, ул. Достаевского, 43"},{"indexmail":"91005","addressDesc":"г. Луганск, ул. Годуванцева, 6"}]"
+                ["track"]=> string(6) "12.839"
+                ["time"]=> string(7) "0:24:39"
+                ["parametersroute"]=> string(118) "[{"distance":6483,"parkingTime":"0:05"},{"distance":6483,"parkingTime":"0:05"},{"distance":6356,"parkingTime":"0:05"}]" }*/
+                $numberStartLine = 13;
+                $objPHPExcel->setActiveSheetIndex(0);
+                for($i=0, $j = count($arrayId); $i<$j; $i++)
                 {
                     $route = Route::find()->where(['id' => $arrayId[$i]])->asArray()->one();
-                    $xlsx[] = $route;
+
+                    $routepost = json_decode($route["routepost"]);
+
+                    $parametersroute = json_decode($route["parametersroute"]);
+
+                    for($n = 0, $k = count($routepost); $n<$k; $n++)
+                    {
+                        $number = $numberStartLine+$n;
+                        $objPHPExcel->getActiveSheet()->setCellValue('A'.$number, $n+1);
+                        if($n == 0)
+                        {
+                            $text = $objPHPExcel->getActiveSheet()->getCell('C7')->getValue();
+                            $text = $text.$route['numberoute'];
+                            $objPHPExcel->getActiveSheet()->setCellValue('C7', "$text");
+                        }
+
+                        //массив $parametersroute всегда меньше на 1 чем $routepost
+                        //***---****---****  (****) - отделение почты
+                        if($n<$k-1){
+                            //$parkingTime = $parametersroute[$n]->parkingTime;
+                            $objPHPExcel->getActiveSheet()
+                                ->setCellValue('D'.$number, $parametersroute[$n]->parkingTime)
+                                ->setCellValue('F'.$number, $parametersroute[$n]->distance);
+                        }
+
+                        $objPHPExcel->getActiveSheet()
+                            ->setCellValue('G'.$number, $routepost[$n]->addressDesc)
+                            ->setCellValue('F52', $route['track']);
+                    }
+                    $objPHPExcel->getActiveSheet()->setTitle('Луганск');
+                    $objWriter = \PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
+                    $currentTime = time();
+                    var_dump($currentTime);
+
+                    $nameFile = $currentTime;
+
+                    $nameFile = "xlsx/Marchrut-".$route["numberoute"]."_".$nameFile.".xlsx";
+                    var_dump($nameFile);
+
+                    $objWriter->save(str_replace(__FILE__,$nameFile,__FILE__));
+                    //$objWriter->save(str_replace(__FILE__,'xlsx/filename1.xlsx',__FILE__));
                 }
-                var_dump($xlsx);
+                echo "__FILE__".__FILE__."<br>";
                 return;
             }
-
-
-
         }
-
 
         return $this->render('gtroutes',['routes'=>$routes]);
     }
+
+    public function getJson(){
+        return 0;
+    }
 }
+
