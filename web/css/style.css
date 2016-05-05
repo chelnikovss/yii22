@@ -57,6 +57,17 @@ body{
 }
 .route-add{
     margin-top: 20px;
-}.route-add input{
+    display: none;
+}
+.route-add input{
     margin-top: 20px;
+}
+#loading-indicator {
+    position: absolute;
+    left: 50%;
+    top: 25%;
+    display: none;
+}
+#calc{
+    display: none;
 }

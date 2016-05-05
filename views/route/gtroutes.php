@@ -4,6 +4,8 @@ $this->title = "Стандартные маршруты";
 $this->params['breadcrumbs'][] = $this->title;
 
 ?>
+<img src="./img/285.gif" id="loading-indicator" />
+<div class="content-list">
 <h1>Маршруты</h1>
 <ul class="list-group">
     <?php foreach ($routes as $route): ?>
@@ -15,3 +17,4 @@ $this->params['breadcrumbs'][] = $this->title;
 <button id="createXlsx" type="button" class="btn btn-primary">Сформировать</button>
 <button type="button" class="btn btn-warning">Изменить</button>
 <button type="button" class="btn btn-danger">Удалить</button>
+</div>

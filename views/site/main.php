@@ -41,7 +41,9 @@ $this->params['breadcrumbs'][] = $this->title;
                 <h2>Результат</h2>
                 <p id="res"></p>
                 <p id="resTime"></p>
+                <button id="draw" type="button" >Нарисовать маршрут</button>
                 <button id="calc" type="button" >Рассчитать</button>
+
             </div>
         </div>
         <div class="route-add">
