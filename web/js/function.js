@@ -6,6 +6,27 @@ function secondsTimeSpanToHMS(s) {
     s -= m*60;
     return h+":"+(m < 10 ? '0'+m : m)+":"+(s < 10 ? '0'+s : s); //zero padding on minutes and seconds
 }
+
+function checkChoice(check) {
+    if(check == undefined || check.length === 0)
+    {
+        let message = "Вы не выбрали ни одного маршрута !"
+        let erModal = bootbox.alert({
+            message: message,
+
+            callback: function() {
+                // setTimeout(function () { location.reload(); },1000);
+            }
+        });
+        erModal.find('.modal-content').css({'background-color':'#F5CF9B','color':'#462428'});
+        erModal.find('.btn-primary').removeClass("btn-primary").addClass("btn-warning")
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
 var locationsMain=[
     {
         "name": "Луганский почтамт",

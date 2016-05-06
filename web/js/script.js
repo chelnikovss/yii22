@@ -91,6 +91,7 @@ $(document).ready(function () {
         else
         {
             let drawRoute = function (i) {
+                var paramSetTime = 1;
                 var j = i;
                 setTimeout(function () {
                     //для задержки запросов
@@ -115,7 +116,10 @@ $(document).ready(function () {
                             //officesCoord.length-2 ==> последний интервал
                             if(callbackdrawroute && officesCoord.length-2 == i)
                             {
-                                callbackdrawroute();
+                                //setTimeout(function () {
+                                    callbackdrawroute();
+                                    return 0;
+                                //}, 5000);
                             }
 
                             // directionsDisplay.setMap(map);
@@ -125,9 +129,10 @@ $(document).ready(function () {
                                 //если превышен лимит запросов к google
                                 //рекурсивно вызываем через 250 мсек
                                 console.log("failed status: " + status, "j", j);
-                                setTimeout(function () {
+                                //setTimeout(function () {
+                                paramSetTime = 2;
                                     drawRoute(j);
-                                },250)
+                                //},1000)
                             }
                             else {
                                 console.log("failed status: " + status);
@@ -137,7 +142,7 @@ $(document).ready(function () {
                     })
                     //By using setTimeout() and calling it recursively, you're ensuring that all previous
                     //operations inside the timeout are complete before the next iteration of the code begins.
-                    },250);
+                    },500*paramSetTime);
             }
             //officesCoord.length-1 ==> интервал меньше на один чем отделений связи
             for(let i = 0, len = officesCoord.length-1; i<len; i++)
@@ -149,7 +154,6 @@ $(document).ready(function () {
     }
     //http://stackoverflow.com/questions/7691762/how-to-add-a-callback-to-a-function-in-javascript
     function callbackdrawroute(){
-        //alert("dfdfd");
         $('#calc').show(1000);
     }
 
@@ -273,7 +277,10 @@ $(document).ready(function () {
 
     $('#calc').click(function () {
         //временная заглушка
-        if(allOffice.length<2) return;
+        //if(allOffice.length<2) return;
+        /////////////////////////////
+
+        ///////////////////////////
 
         var sumDistance = 0,
             sumTime = 0;
@@ -313,10 +320,13 @@ $(document).ready(function () {
         $('.route-add').show(1000);
 
     });
-    $('#draw').click(function () {
-        if(allOffice.length<2) return;
-        drawRouteBetweenMarker(allOffice, callbackdrawroute);
 
+    $('#draw').click(function () {
+        // if(allOffice.length<2) return;
+         drawRouteBetweenMarker(allOffice, callbackdrawroute);
+        //////////////////////////////////////////////////////////////////
+
+        //drawRouteBetweenMarker(t, callbackdrawroute);
     })
 
     $('#add-route').submit(function (e) {
@@ -394,28 +404,54 @@ $(document).ready(function () {
     //////////////////////
     //// start click input
     //////////
-    var routeInputId = [];
+    function routeSelected() {
+        this.routeInputId = [];
+        this.checkItem = function (event) {
+            this.event = event;
+            console.log(this.event.target.id);
+            console.log($(this.event.target).data('numberoute'));
+            if(jQuery.inArray(this.event.target.id, this.routeInputId) == -1)
+            {
+                this.routeInputId.push(this.event.target.id);
+            }
+            console.log(this.routeInputId);
+            //console.log(this.routeInputId);
+        };
+        this.getSelectedItems = function () {
+            let checkInput = [];
+            console.log("checkInput before check",checkInput,"#createXlsx click","routeInputId: ", this.routeInputId);
+            for(let i = 0, j = this.routeInputId.length; i<j;i++)
+            {
+                if($("#"+this.routeInputId[i]+"").is(':checked'))
+                {
+                    checkInput.push(this.routeInputId[i]);
+                }
+            }
+            console.log("checkInput after check",checkInput);
+            return checkInput;
+        };
+    }
+
+    var routeSel = new routeSelected();
+
     $("input.route-input ").click(function(event) {
-        //console.log(event.target.id);
-        if(jQuery.inArray(event.target.id, routeInputId) == -1)
-        {
-            routeInputId.push(event.target.id);
-        }
+        routeSel.checkItem(event);
     });
+    //////////////////////
+    //// end click input
+    //////////
+    // function getSelectedItems() {
+    //
+    // };
     $('#createXlsx').click(function () {
+        var checkInput = routeSel.getSelectedItems();
+        if(checkChoice(checkInput))
+        {
+            return;
+        }
         $('.content-list').hide(500);
         $('#loading-indicator').show(500);
 
-        let checkInput = [];
-        console.log("checkInput before check",checkInput,"#createXlsx click","routeInputId: ", routeInputId);
-        for(let i = 0, j = routeInputId.length; i<j;i++)
-        {
-            if($("#"+routeInputId[i]+"").is(':checked'))
-            {
-                checkInput.push(routeInputId[i]);
-            }
-        }
-        console.log("checkInput after check",checkInput);
         var url = '?r=route/gtroutes';
         $.ajax({
             type: "POST",
@@ -431,7 +467,791 @@ $(document).ready(function () {
         });
 
     });
-    //////////////////////
-    //// end click input
-    //////////
+    $('#delroute').click(function () {
+        console.log("delroute");
+        function compareNumeric(a,b) {
+            if (a > b )  return 1;
+            if( a < b ) return -1;
+        }
+        var checkInput = routeSel.getSelectedItems();
+        if(checkChoice(checkInput))
+        {
+            return;
+        }
+        console.log("checkInput:",  checkInput);
+        checkInput = checkInput.sort(compareNumeric);
+        console.log("checkInput sort:", checkInput);
+        var message = "Вы действительно хотите удалить выбранный путь? <br>";
+        for(let i=0, len = checkInput.length; i<len; i++)
+        {
+            let number = $('#'+checkInput[i]).attr('data-numberoute');
+            console.log("Маршрут №: ",number)
+            message+="Маршрут №: "+number+"<br />";
+            console.log("message: ",message)
+        }
+        var erModal = bootbox.confirm({
+            message: message,
+            buttons: {
+                'cancel': {
+                    label: 'Отмена',
+                    className: 'btn-default pull-left'
+                },
+                'confirm': {
+                    label: 'Удалить',
+                    className: 'btn-danger pull-right'
+                }
+            },
+            callback: function(result) {
+                if(result)
+                {
+                    console.log("ОК");
+                    var url = '?r=route/gtroutes';
+
+                    $.ajax({
+                        type: "POST",
+                        url: url,
+                        data: {checkRoute: checkInput},
+                        success: function (data) {
+
+                            if(data == true)
+                            {
+                                alert("Удаление из базы произошло успешно");
+                                location.reload();
+                            }
+                            else
+                            {
+                                alert("<strong>Ошибка ! </strong> При удалении маршрута произошла ошибка" );
+                                location.reload();
+                            }
+
+                        },
+                        error: function () {
+                            alert("Ошибка ! Попробуйте выполнить операцию еще раз или обратитесь к администратору. ")
+                            location.reload();
+                        }
+                    });
+                }
+                else
+                {
+                    console.log("Отмена");}
+                }
+        });
+        erModal.find('.modal-content').css({'background-color':'#D69291','color':'#2B2323'});
+
+    });
+    var  t;
+    $("#test").click(function () {
+
+        // var  t = [
+        //     {
+        //         addressDesc
+        //             :
+        //             "г. Луганск Остаря могила, 151",
+        //         indexmail
+        //             :
+        //             "91004",
+        //         lat
+        //             :
+        //             "48.526261",
+        //         lng
+        //             :
+        //             "39.364185"},
+        //     {
+        //         addressDesc
+        //             :
+        //             "г. Луганск, ул.Артема, 183",
+        //         indexmail
+        //             :
+        //             "91002",
+        //         lat
+        //             :
+        //             "48.590532",
+        //         lng
+        //             :
+        //             "39.306782"
+        //     },
+        //     {addressDesc
+        //         :
+        //         "г. Луганск, ул. Годуванцева, 6",
+        //         indexmail
+        //             :
+        //             "91005",
+        //         lat
+        //             :
+        //             "48.572829",
+        //         lng
+        //             :
+        //             "39.338619"},
+        //     {addressDesc
+        //         :
+        //         "г. Луганск, ул.Артема, 183",
+        //         indexmail
+        //             :
+        //             "91002",
+        //         lat
+        //             :
+        //             "48.590532",
+        //         lng
+        //             :
+        //             "39.306782"},
+        //     {addressDesc
+        //         :
+        //         "г. Луганск, ул. Годуванцева, 6",
+        //         indexmail
+        //             :
+        //             "91005",
+        //         lat
+        //             :
+        //             "48.572829",
+        //         lng
+        //             :
+        //             "39.338619"},
+        //     {
+        //         addressDesc
+        //             :
+        //             "г. Луганск, ул. Героев Сталинграда, 9а",
+        //         indexmail
+        //             :
+        //             "91006",
+        //         lat
+        //             :
+        //             "48.541367",
+        //         lng
+        //             :
+        //             "39.261759"
+        //
+        //     },
+        //     {
+        //         addressDesc
+        //             :
+        //             "г. Луганск, ул. Достаевского, 43",
+        //         indexmail
+        //             :
+        //             "91007",
+        //         lat
+        //             :
+        //             "48.546885",
+        //         lng
+        //             :
+        //             "39.288017"
+        //     },
+        //     {addressDesc
+        //         :
+        //         "г. Луганск, ул.Артема, 183",
+        //         indexmail
+        //             :
+        //             "91002",
+        //         lat
+        //             :
+        //             "48.590532",
+        //         lng
+        //             :
+        //             "39.306782"},
+        //     {
+        //         addressDesc
+        //             :
+        //             "г. Луганск Остаря могила, 151",
+        //         indexmail
+        //             :
+        //             "91004",
+        //         lat
+        //             :
+        //             "48.526261",
+        //         lng
+        //             :
+        //             "39.364185"
+        //     },
+        //     {
+        //         addressDesc: "г. Луганск, ул. Годуванцева, 6",
+        //         indexmail: "91005",
+        //         lat: "48.572829",
+        //         lng: "39.338619",
+        //     },
+        //     {
+        //         addressDesc
+        //             :
+        //             "г. Луганск, ул. Героев Сталинграда, 9а",
+        //         indexmail
+        //             :
+        //             "91006",
+        //         lat
+        //             :
+        //             "48.541367",
+        //         lng
+        //             :
+        //             "39.261759"
+        //     },
+        //     {addressDesc
+        //         :
+        //         "г. Луганск, ул.Артема, 183",
+        //         indexmail
+        //             :
+        //             "91002",
+        //         lat
+        //             :
+        //             "48.590532",
+        //         lng
+        //             :
+        //             "39.306782"},
+        //     {
+        //         addressDesc
+        //             :
+        //             "г. Луганск, ул. Достаевского, 43",
+        //         indexmail
+        //             :
+        //             "91007",
+        //         lat
+        //             :
+        //             "48.546885",
+        //         lng
+        //             :
+        //             "39.288017"
+        //     },
+        //     {
+        //         addressDesc
+        //             :
+        //             "г. Луганск, ул. Годуванцева, 6",
+        //         indexmail
+        //             :
+        //             "91005",
+        //         lat
+        //             :
+        //             "48.572829",
+        //         lng
+        //             :
+        //             "39.338619"
+        //     },
+        //     {
+        //         addressDesc
+        //             :
+        //             "г. Луганск, ул.Артема, 183",
+        //         indexmail
+        //             :
+        //             "91002",
+        //         lat
+        //             :
+        //             "48.590532",
+        //         lng
+        //             :
+        //             "39.306782"
+        //     },
+        //     {addressDesc
+        //         :
+        //         "г. Луганск Остаря могила, 151",
+        //         indexmail
+        //             :
+        //             "91004",
+        //         lat
+        //             :
+        //             "48.526261",
+        //         lng
+        //             :
+        //             "39.364185"},
+        //     {addressDesc
+        //         :
+        //         "г. Луганск, ул. Годуванцева, 6",
+        //         indexmail
+        //             :
+        //             "91005",
+        //         lat
+        //             :
+        //             "48.572829",
+        //         lng
+        //             :
+        //             "39.338619"},
+        //     {addressDesc
+        //         :
+        //         "г. Луганск, ул. Достаевского, 43",
+        //         indexmail
+        //             :
+        //             "91007",
+        //         lat
+        //             :
+        //             "48.546885",
+        //         lng
+        //             :
+        //             "39.288017"},
+        //     {addressDesc
+        //         :
+        //         "г. Луганск, ул.Артема, 183",
+        //         indexmail
+        //             :
+        //             "91002",
+        //         lat
+        //             :
+        //             "48.590532",
+        //         lng
+        //             :
+        //             "39.306782"},
+        //     {
+        //         addressDesc: "г. Луганск Остаря могила, 151",
+        //         indexmail: "91004",
+        //         lat: "48.526261",
+        //         lng: "39.364185"
+        //     },
+        //     {addressDesc
+        //         :
+        //         "г. Луганск, ул. Годуванцева, 6",
+        //         indexmail
+        //             :
+        //             "91005",
+        //         lat
+        //             :
+        //             "48.572829",
+        //         lng
+        //             :
+        //             "39.338619"},
+        //     {addressDesc
+        //         :
+        //         "г. Луганск, ул. Героев Сталинграда, 9а",
+        //         indexmail
+        //             :
+        //             "91006",
+        //         lat
+        //             :
+        //             "48.541367",
+        //         lng
+        //             :
+        //             "39.261759"},
+        //     {addressDesc
+        //         :
+        //         "г. Луганск, ул. Достаевского, 43",
+        //         indexmail
+        //             :
+        //             "91007",
+        //         lat
+        //             :
+        //             "48.546885",
+        //         lng
+        //             :
+        //             "39.288017"},
+        //     {addressDesc
+        //         :
+        //         "г. Луганск, ул.Артема, 183",
+        //         indexmail
+        //             :
+        //             "91002",
+        //         lat
+        //             :
+        //             "48.590532",
+        //         lng
+        //             :
+        //             "39.306782"},
+        //     {addressDesc
+        //         :
+        //         "г. Луганск Остаря могила, 151",
+        //         indexmail
+        //             :
+        //             "91004",
+        //         lat
+        //             :
+        //             "48.526261",
+        //         lng
+        //             :
+        //             "39.364185"},
+        //     {addressDesc
+        //         :
+        //         "г. Луганск, ул. Героев Сталинграда, 9а",
+        //         indexmail
+        //             :
+        //             "91006",
+        //         lat
+        //             :
+        //             "48.541367",
+        //         lng
+        //             :
+        //             "39.261759"},
+        //     {addressDesc
+        //         :
+        //         "г. Луганск, ул. Достаевского, 43",
+        //         indexmail
+        //             :
+        //             "91007",
+        //         lat
+        //             :
+        //             "48.546885",
+        //         lng
+        //             :
+        //             "39.288017"},
+        //     {
+        //         addressDesc
+        //             :
+        //             "г. Луганск, ул. Годуванцева, 6",
+        //         indexmail
+        //             :
+        //             "91005",
+        //         lat
+        //             :
+        //             "48.572829",
+        //         lng
+        //             :
+        //             "39.338619"
+        //     }
+        //
+        // ];
+        t = [
+            {
+                addressDesc
+                    :
+                    "г. Луганск Остаря могила, 151",
+                indexmail
+                    :
+                    "91004",
+                lat
+                    :
+                    "48.526261",
+                lng
+                    :
+                    "39.364185"},
+            {
+                addressDesc
+                    :
+                    "г. Луганск, ул.Артема, 183",
+                indexmail
+                    :
+                    "91002",
+                lat
+                    :
+                    "48.590532",
+                lng
+                    :
+                    "39.306782"
+            },
+            {addressDesc
+                :
+                "г. Луганск Остаря могила, 151",
+                indexmail
+                    :
+                    "91004",
+                lat
+                    :
+                    "48.526261",
+                lng
+                    :
+                    "39.364185"},
+            {addressDesc
+                :
+                "г. Луганск, ул. Годуванцева, 6",
+                indexmail
+                    :
+                    "91005",
+                lat
+                    :
+                    "48.572829",
+                lng
+                    :
+                    "39.338619"},
+            {addressDesc
+                :
+                "г. Луганск, ул.Артема, 183",
+                indexmail
+                    :
+                    "91002",
+                lat
+                    :
+                    "48.590532",
+                lng
+                    :
+                    "39.306782"},
+            {addressDesc
+                :
+                "г. Луганск, ул. Годуванцева, 6",
+                indexmail
+                    :
+                    "91005",
+                lat
+                    :
+                    "48.572829",
+                lng
+                    :
+                    "39.338619"},
+            {
+                addressDesc
+                    :
+                    "г. Луганск, ул. Героев Сталинграда, 9а",
+                indexmail
+                    :
+                    "91006",
+                lat
+                    :
+                    "48.541367",
+                lng
+                    :
+                    "39.261759"
+
+            },
+            {
+                addressDesc
+                    :
+                    "г. Луганск, ул. Достаевского, 43",
+                indexmail
+                    :
+                    "91007",
+                lat
+                    :
+                    "48.546885",
+                lng
+                    :
+                    "39.288017"
+            },
+            {addressDesc
+                :
+                "г. Луганск, ул.Артема, 183",
+                indexmail
+                    :
+                    "91002",
+                lat
+                    :
+                    "48.590532",
+                lng
+                    :
+                    "39.306782"},
+            {
+                addressDesc
+                    :
+                    "г. Луганск Остаря могила, 151",
+                indexmail
+                    :
+                    "91004",
+                lat
+                    :
+                    "48.526261",
+                lng
+                    :
+                    "39.364185"
+            },
+            {
+                addressDesc: "г. Луганск, ул. Годуванцева, 6",
+                indexmail: "91005",
+                lat: "48.572829",
+                lng: "39.338619",
+            },
+            {
+                addressDesc
+                    :
+                    "г. Луганск, ул. Героев Сталинграда, 9а",
+                indexmail
+                    :
+                    "91006",
+                lat
+                    :
+                    "48.541367",
+                lng
+                    :
+                    "39.261759"
+            },
+            {addressDesc
+                :
+                "г. Луганск, ул.Артема, 183",
+                indexmail
+                    :
+                    "91002",
+                lat
+                    :
+                    "48.590532",
+                lng
+                    :
+                    "39.306782"},
+            {
+                addressDesc
+                    :
+                    "г. Луганск, ул. Достаевского, 43",
+                indexmail
+                    :
+                    "91007",
+                lat
+                    :
+                    "48.546885",
+                lng
+                    :
+                    "39.288017"
+            },
+            {
+                addressDesc
+                    :
+                    "г. Луганск, ул. Годуванцева, 6",
+                indexmail
+                    :
+                    "91005",
+                lat
+                    :
+                    "48.572829",
+                lng
+                    :
+                    "39.338619"
+            },
+            {
+                addressDesc
+                    :
+                    "г. Луганск, ул.Артема, 183",
+                indexmail
+                    :
+                    "91002",
+                lat
+                    :
+                    "48.590532",
+                lng
+                    :
+                    "39.306782"
+            },
+            {addressDesc
+                :
+                "г. Луганск Остаря могила, 151",
+                indexmail
+                    :
+                    "91004",
+                lat
+                    :
+                    "48.526261",
+                lng
+                    :
+                    "39.364185"},
+            {addressDesc
+                :
+                "г. Луганск, ул. Годуванцева, 6",
+                indexmail
+                    :
+                    "91005",
+                lat
+                    :
+                    "48.572829",
+                lng
+                    :
+                    "39.338619"},
+            {addressDesc
+                :
+                "г. Луганск, ул. Достаевского, 43",
+                indexmail
+                    :
+                    "91007",
+                lat
+                    :
+                    "48.546885",
+                lng
+                    :
+                    "39.288017"},
+            {addressDesc
+                :
+                "г. Луганск, ул.Артема, 183",
+                indexmail
+                    :
+                    "91002",
+                lat
+                    :
+                    "48.590532",
+                lng
+                    :
+                    "39.306782"},
+            {
+                addressDesc: "г. Луганск Остаря могила, 151",
+                indexmail: "91004",
+                lat: "48.526261",
+                lng: "39.364185"
+            },
+            {addressDesc
+                :
+                "г. Луганск, ул. Годуванцева, 6",
+                indexmail
+                    :
+                    "91005",
+                lat
+                    :
+                    "48.572829",
+                lng
+                    :
+                    "39.338619"},
+            {addressDesc
+                :
+                "г. Луганск, ул. Героев Сталинграда, 9а",
+                indexmail
+                    :
+                    "91006",
+                lat
+                    :
+                    "48.541367",
+                lng
+                    :
+                    "39.261759"},
+            {addressDesc
+                :
+                "г. Луганск, ул. Достаевского, 43",
+                indexmail
+                    :
+                    "91007",
+                lat
+                    :
+                    "48.546885",
+                lng
+                    :
+                    "39.288017"},
+            {addressDesc
+                :
+                "г. Луганск, ул.Артема, 183",
+                indexmail
+                    :
+                    "91002",
+                lat
+                    :
+                    "48.590532",
+                lng
+                    :
+                    "39.306782"},
+            {addressDesc
+                :
+                "г. Луганск Остаря могила, 151",
+                indexmail
+                    :
+                    "91004",
+                lat
+                    :
+                    "48.526261",
+                lng
+                    :
+                    "39.364185"},
+            {addressDesc
+                :
+                "г. Луганск, ул. Героев Сталинграда, 9а",
+                indexmail
+                    :
+                    "91006",
+                lat
+                    :
+                    "48.541367",
+                lng
+                    :
+                    "39.261759"},
+            {addressDesc
+                :
+                "г. Луганск, ул. Достаевского, 43",
+                indexmail
+                    :
+                    "91007",
+                lat
+                    :
+                    "48.546885",
+                lng
+                    :
+                    "39.288017"},
+            {
+                addressDesc
+                    :
+                    "г. Луганск, ул. Годуванцева, 6",
+                indexmail
+                    :
+                    "91005",
+                lat
+                    :
+                    "48.572829",
+                lng
+                    :
+                    "39.338619"
+            }
+
+        ];
+        allOffice = t;
+        $(".office-route").show();
+        $(".res-dist").show();
+
+    });
+
 });

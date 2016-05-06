@@ -44,6 +44,7 @@ $this->params['breadcrumbs'][] = $this->title;
                 <button id="draw" type="button" >Нарисовать маршрут</button>
                 <button id="calc" type="button" >Рассчитать</button>
 
+
             </div>
         </div>
         <div class="route-add">
@@ -55,4 +56,5 @@ $this->params['breadcrumbs'][] = $this->title;
             </form>
         </div>
     </div>
+    <button id="test" type="button" >test</button>
 </div>

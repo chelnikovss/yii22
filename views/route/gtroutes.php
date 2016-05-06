@@ -10,11 +10,11 @@ $this->params['breadcrumbs'][] = $this->title;
 <ul class="list-group">
     <?php foreach ($routes as $route): ?>
         <li class="list-group-item">
-            <input class="route-input" id="<?= $route->id?>" type="checkbox"/> Маршрут № <b><?= $route->numberoute?></b> <i><?=$route->routepost?></i> Время: <?= $route->time?> Путь: <?= $route->track?>
+            <input class="route-input" id="<?= $route->id?>" data-numberoute="<?= $route->numberoute?>" type="checkbox"/> Маршрут № <b><?= $route->numberoute?></b> <i><?=$route->routepost?></i> Время: <?= $route->time?> Путь: <?= $route->track?>
         </li>
     <?php endforeach; ?>
 </ul>
 <button id="createXlsx" type="button" class="btn btn-primary">Сформировать</button>
 <button type="button" class="btn btn-warning">Изменить</button>
-<button type="button" class="btn btn-danger">Удалить</button>
+<button id="delroute" type="button" class="btn btn-danger">Удалить</button>
 </div>

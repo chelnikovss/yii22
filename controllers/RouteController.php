@@ -26,9 +26,6 @@ class RouteController extends Controller
     {
         $routes = Route::find()->all();
         $indexmail ="";
-
-
-
         for($i=0;$i<count($routes);$i++)
         {
             $r = (json_decode($routes[$i]['routepost']));
@@ -108,6 +105,26 @@ class RouteController extends Controller
                 }
                 echo "__FILE__".__FILE__."<br>";
                 return;
+            }
+            if(Yii::$app->request->post('checkRoute'))
+            {
+                $arrayId = Yii::$app->request->post('checkRoute');
+
+                for($i =0, $len = count($arrayId);$i<$len; $i++)
+                {
+                    $route = Route::findOne($arrayId[$i]);
+                    $res = $route->delete();
+                    if(!is_int($res))
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        $res = true;
+                    }
+                }
+
+                return $res;
             }
         }
 
