@@ -7,6 +7,26 @@ body{
     /*background-position: 40% 1%;*/
 
 }
+.modalajax {
+    display:    none;
+    position:   fixed;
+    z-index:    1000;
+    top:        0;
+    left:       0;
+    height:     100%;
+    width:      100%;
+    background: rgba( 255, 255, 255, .8 )
+    /*url('../img/477.gif')*/
+    50% 50%
+    no-repeat;
+}
+body.loading {
+    overflow: hidden;
+}
+body.loading .modalajax {
+    display: block;
+}
+
 .layout{
     margin: 15px 0;
     overflow: hidden;
@@ -48,6 +68,9 @@ body{
 .office-route_title{
     margin-bottom: 20px;
 }
+.route-calc{
+    margin-top: 50px;
+}
 .map-content_title{
     font-size: 30px;
     padding: 20px;
@@ -62,11 +85,13 @@ body{
 .route-add input{
     margin-top: 20px;
 }
-#loading-indicator {
+#loading-indicator, #indicator-draw {
     position: absolute;
     left: 50%;
-    top: 25%;
+    top: 30%;
+
     display: none;
+    z-index: 2000;
 }
 #calc{
     display: none;

@@ -6,6 +6,7 @@ $this->title = 'Главная';
 $this->params['breadcrumbs'][] = $this->title;
 
 ?>
+<img src="./img/477.gif" id="indicator-draw" />
 <div class="layout">
     <div class="map-content">
         <div class="map-content_title">Расчет маршрута</div>
@@ -13,6 +14,10 @@ $this->params['breadcrumbs'][] = $this->title;
     </div>
     <div class="content">
         <div class="route-calc">
+            <div class="form-group">
+                <label for="departure">Отправление: </label>
+                    <input id="departure" type="time" min="00:00" max="23:59" value="07:10" />
+            </div>
             <div class="route-main">Маршрут</div>
             <div class="list-post-Offices">
                 <form id="offices" method="post">
@@ -35,7 +40,10 @@ $this->params['breadcrumbs'][] = $this->title;
                 </form>
             </div>
             <div class="office-route">
-                <div class="office-route_title">Маршрут по выбранным почтовым отделениям </div>
+                <div class="office-route_title">Маршрут по выбранным почтовым отделениям и время стоянки</div>
+<!--                <div class="parkingTime">-->
+<!--                    <input type="time" value="00:05" min="00:01" max="99:59"/>-->
+<!--                </div>-->
             </div>
             <div class="res-dist">
                 <h2>Результат</h2>
@@ -58,3 +66,4 @@ $this->params['breadcrumbs'][] = $this->title;
     </div>
     <button id="test" type="button" >test</button>
 </div>
+<div class="modalajax"></div>

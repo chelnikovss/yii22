@@ -140,6 +140,7 @@ class SiteController extends Controller
                     'id' => '',
                     'numberoute' => $calcTrackTime['numberoute'],
                     'routepost' => $calcTrackTime['routepost'],
+                    'exitime' => $calcTrackTime['exitime'],
                     'track' => $calcTrackTime['track'],
                     'time' => $calcTrackTime['time'],
                     'parametersroute' => $calcTrackTime['parametersroute'],
@@ -162,6 +163,7 @@ class SiteController extends Controller
         $coordinate['lnglocation'] = $res['lnglocation'];
         $coordinate['indexmail'] = $res['indexmail'];
         $coordinate['addressDesc'] = $res['addressDesc'];
+        $coordinate['id'] = $res['id'];
 
         echo json_encode($coordinate);
     }

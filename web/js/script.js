@@ -8,6 +8,7 @@ $(document).ready(function () {
 
     var coordinate = [];
     var allOffice = [];
+    var officeCalc = [];
     var allDistanceTime = [];
     var calcTrackTime = {};
 
@@ -46,111 +47,119 @@ $(document).ready(function () {
     //add route on map
     function drawRouteBetweenMarker(officesCoord, callbackdrawroute) {
     //var officesCoord = officesCoord;
-
         console.log("function drawRouteBetweenMarker", "officesCoord",officesCoord);
+        $body = $("body");
+        $body.addClass("loading");
+        $('#indicator-draw').show(1000,function () {
 
-        //Ограничение для google api 8 точек рисует, больше нет, только попарно ниже else
-        //officesCoord.length количество офисов
-        //officesCoord.length<1 временно
-        if(officesCoord.length<1){
-            console.log("officesCoord",officesCoord);
-        var mapRoute = {map: map};
-        var directionsDisplay = new google.maps.DirectionsRenderer(mapRoute);
+            //Ограничение для google api 8 точек рисует, больше нет, только попарно ниже else
+            //officesCoord.length количество офисов
+            //officesCoord.length<1 временно
+            if(officesCoord.length<1){
+                console.log("officesCoord",officesCoord);
+                var mapRoute = {map: map};
+                var directionsDisplay = new google.maps.DirectionsRenderer(mapRoute);
 
-        var start = officesCoord[0].lat+','+ officesCoord[0].lng;
-        var end = officesCoord[officesCoord.length-1].lat+','+ officesCoord[officesCoord.length-1].lng;
+                var start = officesCoord[0].lat+','+ officesCoord[0].lng;
+                var end = officesCoord[officesCoord.length-1].lat+','+ officesCoord[officesCoord.length-1].lng;
 
-        var wps = [];
-        ///первый и последний офис не вносим только промежуточные точки
-        for(var i=1; i<officesCoord.length-1; i++){
-            var point = new google.maps.LatLng(officesCoord[i].lat,officesCoord[i].lng);
-            //объект должен включать поле location для google api
-            wps.push({location:point});
-        }
+                var wps = [];
+                ///первый и последний офис не вносим только промежуточные точки
+                for(var i=1; i<officesCoord.length-1; i++){
+                    var point = new google.maps.LatLng(officesCoord[i].lat,officesCoord[i].lng);
+                    //объект должен включать поле location для google api
+                    wps.push({location:point});
+                }
 
-        var request = {
-            origin: start,
-            destination: end,
-            waypoints: wps,
-            //travelMode: google.maps.TravelMode.DRIVING
-            travelMode:google.maps.DirectionsTravelMode.DRIVING
-        };
-        var directionsService = new google.maps.DirectionsService();
-        directionsService.route(request,function (response, status) {
-            //console.log("directionsService.route");
-            if(status == google.maps.DirectionsStatus.OK){
-                //console.log("status == google.maps.DirectionsStatus.OK");
-                directionsDisplay.setDirections(response);
-                //directionsDisplay.setMap(map);
+                var request = {
+                    origin: start,
+                    destination: end,
+                    waypoints: wps,
+                    //travelMode: google.maps.TravelMode.DRIVING
+                    travelMode:google.maps.DirectionsTravelMode.DRIVING
+                };
+                var directionsService = new google.maps.DirectionsService();
+                directionsService.route(request,function (response, status) {
+                    //console.log("directionsService.route");
+                    if(status == google.maps.DirectionsStatus.OK){
+                        //console.log("status == google.maps.DirectionsStatus.OK");
+                        directionsDisplay.setDirections(response);
+                        //directionsDisplay.setMap(map);
+                    }
+                    else{
+                        console.log("Directions Request from " + start.toUrlValue(6) + " to " + end.toUrlValue(6) + " failed: " + status)
+                    }
+                })
             }
-            else{
-                console.log("Directions Request from " + start.toUrlValue(6) + " to " + end.toUrlValue(6) + " failed: " + status)
-            }
-        })
-        }
-        else
-        {
-            let drawRoute = function (i) {
-                var paramSetTime = 1;
-                var j = i;
-                setTimeout(function () {
-                    //для задержки запросов
-                    let directionsDisplay;
-                    let directionsService = new google.maps.DirectionsService();
-                    let mapRoute = {map: map};
-
-                    directionsDisplay = new google.maps.DirectionsRenderer(mapRoute);
-
-                    let start = officesCoord[j].lat+','+ officesCoord[j].lng;
-                    let end = officesCoord[j+1].lat+','+ officesCoord[j+1].lng;
-
-                    let request = {
-                        origin: start,
-                        destination: end,
-                        travelMode: google.maps.TravelMode.DRIVING
-                    };
-                    directionsService.route(request, function (response, status) {
-                        if (status == google.maps.DirectionsStatus.OK) {
-                            directionsDisplay.setDirections(response);
-
-                            //officesCoord.length-2 ==> последний интервал
-                            if(callbackdrawroute && officesCoord.length-2 == i)
-                            {
-                                //setTimeout(function () {
-                                    callbackdrawroute();
-                                    return 0;
-                                //}, 5000);
-                            }
-
-                            // directionsDisplay.setMap(map);
-                        } else {
-                            if(status == google.maps.GeocoderStatus.OVER_QUERY_LIMIT)
-                            {
-                                //если превышен лимит запросов к google
-                                //рекурсивно вызываем через 250 мсек
-                                console.log("failed status: " + status, "j", j);
-                                //setTimeout(function () {
-                                paramSetTime = 2;
-                                    drawRoute(j);
-                                //},1000)
-                            }
-                            else {
-                                console.log("failed status: " + status);
-                            }
-                            //console.log("Directions Request from " + start.toUrlValue(6) + " to " + end.toUrlValue(6));
-                        }
-                    })
-                    //By using setTimeout() and calling it recursively, you're ensuring that all previous
-                    //operations inside the timeout are complete before the next iteration of the code begins.
-                    },500*paramSetTime);
-            }
-            //officesCoord.length-1 ==> интервал меньше на один чем отделений связи
-            for(let i = 0, len = officesCoord.length-1; i<len; i++)
+            else
             {
-                //directionsService.route использует аякс запросы поэтому - замыкание
-                drawRoute(i);
+                //var paramSetTime = 0;
+                //officesCoord.length-1 ==> интервал меньше на один чем отделений связи
+                for(var i = 0, len = officesCoord.length-1; i<len; i++)
+                {
+                    //directionsService.route использует аякс запросы поэтому - замыкание
+                    (function drawRoute (i) {
+                        setTimeout(function () {
+                            var j = i;
+                            console.log("j", j);
+                            let directionsDisplay;
+                            let directionsService = new google.maps.DirectionsService();
+                            let mapRoute = {map: map};
+                            directionsDisplay = new google.maps.DirectionsRenderer(mapRoute);
+                            let start = officesCoord[j].lat+','+ officesCoord[j].lng;
+                            let end = officesCoord[j+1].lat+','+ officesCoord[j+1].lng;
+                            let request = {
+                                origin: start,
+                                destination: end,
+                                travelMode: google.maps.TravelMode.DRIVING
+                            };
+                            directionsService.route(request, function (response, status) {
+                                if (status == google.maps.DirectionsStatus.OK) {
+                                    directionsDisplay.setDirections(response);
+                                    //officesCoord.length-2 ==> последний интервал
+                                    if(callbackdrawroute && officesCoord.length-2 == i)
+                                    {
+                                        console.log("callbackdrawroute ========= i : ", i );
+                                        var timeFlag = 500;
+                                        if(officesCoord.length>10)
+                                            timeFlag = 3000;
+                                        setTimeout(function () {
+                                            callbackdrawroute();
+                                            $body.removeClass("loading");
+                                            $('#indicator-draw').hide(500);
+                                        }, timeFlag);
+                                    }
+                                }
+                                else
+                                {
+                                    if(status == google.maps.GeocoderStatus.OVER_QUERY_LIMIT)
+                                    {
+                                        //если превышен лимит запросов к google
+                                        //рекурсивно вызываем через 250 мсек
+                                        console.log("failed status: " + status, "j", j);
+                                        setTimeout(drawRoute(j),500);
+                                    }
+                                    else
+                                    {
+                                        console.log("failed status: " + status);
+                                    }
+                                    //console.log("Directions Request from " + start.toUrlValue(6) + " to " + end.toUrlValue(6));
+                                }
+
+                            })
+
+                        },500);
+                        //By using setTimeout() and calling it recursively, you're ensuring that all previous
+                        //operations inside the timeout are complete before the next iteration of the code begins.
+
+                    }(i));
+                }
             }
-        }
+
+        });
+
+
+
     }
     //http://stackoverflow.com/questions/7691762/how-to-add-a-callback-to-a-function-in-javascript
     function callbackdrawroute(){
@@ -210,6 +219,7 @@ $(document).ready(function () {
 
     //TODO:: jquery-ajax-submit-form
     $("#offices").submit(function (e) {
+        console.log("submit Добавить точку");
         var url = '?r=site/main';
         $.ajax({
             type: "POST",
@@ -226,13 +236,15 @@ $(document).ready(function () {
     
     function addOfficeRoute(office) {
         console.log("office:",office);
-        $( ".office-route" ).append( office.indexmail+" >> " );
+        var input = $("<input type='time' id="+office.id+" value='00:05' min='00:01' max='99:59'/>");
+        $( ".office-route" ).append(" "+office.indexmail+" > ").append(input);
 
         var addOffice = {};
         addOffice.lat = office.latlocation;
         addOffice.lng = office.lnglocation;
         addOffice.indexmail = office.indexmail;
         addOffice.addressDesc = office.addressDesc;
+        addOffice.id = office.id;
         allOffice.push(addOffice);
 
         addMarker(addOffice, office.indexmail);
@@ -244,25 +256,22 @@ $(document).ready(function () {
     
     //distance count google api
     function distanceCount(start, finish , call) {
-        console.log("distanceCount");
-        var service = new google.maps.DistanceMatrixService();
-        service.getDistanceMatrix(
-            {
-                origins: [start],
-                destinations: [finish],
-                travelMode: google.maps.TravelMode.DRIVING,
-                unitSystem: google.maps.UnitSystem.METRIC,
-                avoidHighways: false,
-                avoidTolls: false
-            },
-            callback);
-
-        function callback(response, status) {
-                if(status != google.maps.DistanceMatrixStatus.OK)
+        (function (start, finish , call) {
+            console.log("distanceCount");
+            var service = new google.maps.DistanceMatrixService();
+            service.getDistanceMatrix(
                 {
-                    console.log('Error was: ' + status);
-                }
-                else
+                    origins: [start],
+                    destinations: [finish],
+                    travelMode: google.maps.TravelMode.DRIVING,
+                    unitSystem: google.maps.UnitSystem.METRIC,
+                    avoidHighways: false,
+                    avoidTolls: false
+                },
+                callback);
+
+            function callback(response, status) {
+                if(status === google.maps.DistanceMatrixStatus.OK)
                 {
                     //var origins = response.originAddresses; var destinations = response.destinationAddresses;
                     console.log("response:", response);
@@ -271,62 +280,64 @@ $(document).ready(function () {
                     info.distance = response.rows[0].elements[0].distance.value;
                     info.time = response.rows[0].elements[0].duration.value;
                     call(info);
+
                 }
-        }
+                else
+                {
+                    console.log('Error was: ' + status);
+                }
+            }
+        }(start, finish , call))
     }
 
     $('#calc').click(function () {
         //временная заглушка
         //if(allOffice.length<2) return;
-        /////////////////////////////
-
-        ///////////////////////////
-
         var sumDistance = 0,
             sumTime = 0;
         console.log("allOffice in distanceCount: ", allOffice);
         for(var i=0, j = allOffice.length - 1; i<j; i++)
         {
-            //формируем данные для гугла - без этого ошибка
-            var start = allOffice[i].lat+','+allOffice[i].lng;
-            var end = allOffice[i+1].lat+','+allOffice[i+1].lng;
-            console.log("start:",start, " end:", end);
-            distanceCount(start, end, function (info) {
-                console.log("distanceCount");
-                console.log("info.distance:",info.distance);
+                (function (i) {
+                    setTimeout(function () {
+                        //формируем данные для гугла - без этого ошибка
+                        var start = allOffice[i].lat+','+allOffice[i].lng;
+                        var end = allOffice[i+1].lat+','+allOffice[i+1].lng;
+                        console.log("start:",start, " end:", end);
 
-                var distanceTime = {};
-                distanceTime.distance = info.distance;
-                distanceTime.parkingTime = "0:05";
-                allDistanceTime.push(distanceTime);
-
-                sumDistance += info.distance;
-                sumTime += info.time;
-                console.log("sumDistance:",sumDistance);
-                var timeFormat = secondsTimeSpanToHMS(sumTime);
-                var distanceFormat = sumDistance/1000;
-                $("#res").html(distanceFormat+" км");
-                $("#resTime").html(timeFormat+" Час:Мин:Сек");
-
-
-                //this data for save basedata
-                calcTrackTime.track = distanceFormat;
-                calcTrackTime.time = timeFormat;
-            });
+                        distanceCount(start, end, function (info) {
+                                console.log("distanceCount","i: ",i);
+                                console.log("info.distance:",info.distance);
+                                //$("ul").find("[data-slide='" + current + "']");
+                                //$("input").find("[data-id=")
+                                var distanceTime = {};
+                                distanceTime.i = i;
+                                distanceTime.distance = info.distance;
+                                //distanceTime.parkingTime = "0:05";
+                                distanceTime.parkingTime = $("#"+allOffice[i].id+"").val();
+                                allDistanceTime.push(distanceTime);
+                                sumDistance += info.distance;
+                                sumTime += info.time;
+                                console.log("sumDistance:",sumDistance);
+                                var timeFormat = secondsTimeSpanToHMS(sumTime);
+                                var distanceFormat = sumDistance/1000;
+                                $("#res").html(distanceFormat+" км");
+                                $("#resTime").html(timeFormat+" Час:Мин:Сек");
+                                //this data for save basedata
+                                calcTrackTime.track = distanceFormat;
+                                calcTrackTime.time = timeFormat;
+                        });
+                    },500);
+                }(i))
         }
-
         $('.res-dist h2').show();
         $('.office-route').css({'color':'green','font-weight':'bold','font-size': '20px'});
         $('.route-add').show(1000);
-
     });
 
     $('#draw').click(function () {
         // if(allOffice.length<2) return;
          drawRouteBetweenMarker(allOffice, callbackdrawroute);
-        //////////////////////////////////////////////////////////////////
-
-        //drawRouteBetweenMarker(t, callbackdrawroute);
     })
 
     $('#add-route').submit(function (e) {
@@ -345,6 +356,13 @@ $(document).ready(function () {
         console.log("indexMail: ",indexMail);
 
         var jsonIndexMail =  JSON.stringify(indexMail);
+        console.log("before sort allDistanceTime: ",allDistanceTime);
+
+        //DistanceMatrixService аякс может вернуть массив не в порядке отправки
+        //поэтому сортируем
+        allDistanceTime.sort(compareRoute);
+        console.log("after sort allDistanceTime: ",allDistanceTime);
+        
         var allDistanceTimeTemp =  JSON.stringify(allDistanceTime);
         console.log("JSON.stringify allDistanceTimeTemp: ",allDistanceTimeTemp,"jsonIndexMail: ",jsonIndexMail);
 
@@ -352,6 +370,8 @@ $(document).ready(function () {
         calcTrackTime.parametersroute = allDistanceTimeTemp;
 
         calcTrackTime.numberoute = $('#number').val();
+
+        calcTrackTime.exitime = $('#departure').val();
 
         console.log("calcTrackTime", calcTrackTime);
 
@@ -440,9 +460,6 @@ $(document).ready(function () {
     //////////////////////
     //// end click input
     //////////
-    // function getSelectedItems() {
-    //
-    // };
     $('#createXlsx').click(function () {
         var checkInput = routeSel.getSelectedItems();
         if(checkChoice(checkInput))
@@ -1251,6 +1268,7 @@ $(document).ready(function () {
         allOffice = t;
         $(".office-route").show();
         $(".res-dist").show();
+        $("#calc").show();
 
     });
 

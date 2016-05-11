@@ -27,6 +27,10 @@ function checkChoice(check) {
         return false;
     }
 }
+
+function compareRoute(RouteA, RouteB) {
+    return RouteA.i - RouteB.i;
+}
 var locationsMain=[
     {
         "name": "Луганский почтамт",
