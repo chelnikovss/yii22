@@ -1,14 +1,11 @@
 $(document).ready(function () {
     var map;
-
     var myLatlng = new google.maps.LatLng(48.578058, 39.302333);
     var title = "Почта ЛНР";
-
     var flagLoad = false;
-
     var coordinate = [];
     var allOffice = [];
-    var officeCalc = [];
+    var departureOffice = [];
     var allDistanceTime = [];
     var calcTrackTime = {};
 
@@ -44,12 +41,15 @@ $(document).ready(function () {
         infowindow.open(map, marker);
     }
 
-    //add route on map
+   /*add route on map*/
     function drawRouteBetweenMarker(officesCoord, callbackdrawroute) {
     //var officesCoord = officesCoord;
         console.log("function drawRouteBetweenMarker", "officesCoord",officesCoord);
         $body = $("body");
         $body.addClass("loading");
+
+        //запоминаем времени пути (отправление)
+        calcTrackTime.exitime = $('#departure').val();
         $('#indicator-draw').show(1000,function () {
 
             //Ограничение для google api 8 точек рисует, больше нет, только попарно ниже else
@@ -166,7 +166,6 @@ $(document).ready(function () {
         $('#calc').show(1000);
     }
 
-
     function placeMarker(location,title) {
         var marker = new google.maps.Marker({
             position: location,
@@ -216,9 +215,9 @@ $(document).ready(function () {
         google.maps.event.addDomListener(window,'load',initialize);
     }
 
-
     //TODO:: jquery-ajax-submit-form
     $("#offices").submit(function (e) {
+        e.preventDefault();
         console.log("submit Добавить точку");
         var url = '?r=site/main';
         $.ajax({
@@ -231,13 +230,14 @@ $(document).ready(function () {
                 addOfficeRoute(office);
             }
         });
-        e.preventDefault();
     });
     
     function addOfficeRoute(office) {
         console.log("office:",office);
-        var input = $("<input type='time' id="+office.id+" value='00:05' min='00:01' max='99:59'/>");
-        $( ".office-route" ).append(" "+office.indexmail+" > ").append(input);
+        //var timeUnix = Math.round(+new Date()/1000);
+        var milliseconds = new Date().getTime();
+        var input = $("<input type='time' id="+office.id+''+milliseconds+" data-id="+milliseconds+" value='00:05' min='00:00' max='23:59'/>");
+        $( ".office-route").append(" "+office.indexmail+" > ").append(input);
 
         var addOffice = {};
         addOffice.lat = office.latlocation;
@@ -245,6 +245,9 @@ $(document).ready(function () {
         addOffice.indexmail = office.indexmail;
         addOffice.addressDesc = office.addressDesc;
         addOffice.id = office.id;
+        addOffice.idmilliseconds = office.id+''+milliseconds;
+        console.log("addOffice.idmilliseconds:",addOffice.idmilliseconds);
+        addOffice.milliseconds = milliseconds;
         allOffice.push(addOffice);
 
         addMarker(addOffice, office.indexmail);
@@ -254,7 +257,7 @@ $(document).ready(function () {
         $(".res-dist").show();
     }
     
-    //distance count google api
+    /*distance count google api*/
     function distanceCount(start, finish , call) {
         (function (start, finish , call) {
             console.log("distanceCount");
@@ -279,6 +282,7 @@ $(document).ready(function () {
                     var info = {};
                     info.distance = response.rows[0].elements[0].distance.value;
                     info.time = response.rows[0].elements[0].duration.value;
+                    info.timetext = response.rows[0].elements[0].duration.text;
                     call(info);
 
                 }
@@ -292,7 +296,7 @@ $(document).ready(function () {
 
     $('#calc').click(function () {
         //временная заглушка
-        //if(allOffice.length<2) return;
+        if(allOffice.length<2) return;
         var sumDistance = 0,
             sumTime = 0;
         console.log("allOffice in distanceCount: ", allOffice);
@@ -306,16 +310,17 @@ $(document).ready(function () {
                         console.log("start:",start, " end:", end);
 
                         distanceCount(start, end, function (info) {
-                                console.log("distanceCount","i: ",i);
-                                console.log("info.distance:",info.distance);
-                                //$("ul").find("[data-slide='" + current + "']");
-                                //$("input").find("[data-id=")
+                                console.log("distanceCount","i: ",i,"info.distance:",info.distance);
                                 var distanceTime = {};
                                 distanceTime.i = i;
                                 distanceTime.distance = info.distance;
-                                //distanceTime.parkingTime = "0:05";
-                                distanceTime.parkingTime = $("#"+allOffice[i].id+"").val();
+                                distanceTime.distancetime = info.time;
+                                distanceTime.distancetimetext = info.timetext;
+                                console.log("allOffice[i].id: ",allOffice[i].id, "$(allOffice[i].id).val()",$("#"+allOffice[i].id+"").val());
+                                distanceTime.parkingTime = $("#"+allOffice[i].idmilliseconds+"").val();
+                                console.log("info.time",info.time);
                                 allDistanceTime.push(distanceTime);
+                                console.log("allDistanceTime",allDistanceTime);
                                 sumDistance += info.distance;
                                 sumTime += info.time;
                                 console.log("sumDistance:",sumDistance);
@@ -329,19 +334,26 @@ $(document).ready(function () {
                         });
                     },500);
                 }(i))
-        }
+        };
+
+
+
+        //console.log("before sort allDistanceTime: ",allDistanceTime);
+        //поэтому сортируем
+        //allDistanceTime.sort(compareRoute);
+        console.log("after sort allDistanceTime: ",allDistanceTime);
         $('.res-dist h2').show();
         $('.office-route').css({'color':'green','font-weight':'bold','font-size': '20px'});
         $('.route-add').show(1000);
     });
 
     $('#draw').click(function () {
-        // if(allOffice.length<2) return;
+         if(allOffice.length<2) return;
          drawRouteBetweenMarker(allOffice, callbackdrawroute);
     })
 
     $('#add-route').submit(function (e) {
-
+        e.preventDefault();
         console.log("#add-route click","allOffice: ",allOffice,"calcTrackTime: ",calcTrackTime,"allDistanceTime: ",allDistanceTime);
 
         var indexMail = [];
@@ -353,16 +365,18 @@ $(document).ready(function () {
             index.addressDesc = allOffice[i].addressDesc;
             indexMail.push(index);
         }
+
         console.log("indexMail: ",indexMail);
 
         var jsonIndexMail =  JSON.stringify(indexMail);
         console.log("before sort allDistanceTime: ",allDistanceTime);
 
-        //DistanceMatrixService аякс может вернуть массив не в порядке отправки
-        //поэтому сортируем
+        /*DistanceMatrixService аякс может вернуть массив не в порядке отправки
+        поэтому сортируем*/
         allDistanceTime.sort(compareRoute);
-        console.log("after sort allDistanceTime: ",allDistanceTime);
-        
+        console.log("after sort allDistanceTime: ",allDistanceTime,"calcTrackTime.exitime:",calcTrackTime.exitime,"allDistanceTime:",allDistanceTime);
+        addParametersrouteComingDeparture(calcTrackTime.exitime,allDistanceTime,allOffice);
+        console.log("allDistanceTime:",allDistanceTime);
         var allDistanceTimeTemp =  JSON.stringify(allDistanceTime);
         console.log("JSON.stringify allDistanceTimeTemp: ",allDistanceTimeTemp,"jsonIndexMail: ",jsonIndexMail);
 
@@ -371,7 +385,7 @@ $(document).ready(function () {
 
         calcTrackTime.numberoute = $('#number').val();
 
-        calcTrackTime.exitime = $('#departure').val();
+        //calcTrackTime.exitime = $('#departure').val();
 
         console.log("calcTrackTime", calcTrackTime);
 
@@ -416,14 +430,11 @@ $(document).ready(function () {
                 }
             }
         })
-
-        e.preventDefault();
-
     });
 
     //////////////////////
     //// start click input
-    //////////
+    //////////////////////
     function routeSelected() {
         this.routeInputId = [];
         this.checkItem = function (event) {
@@ -459,7 +470,7 @@ $(document).ready(function () {
     });
     //////////////////////
     //// end click input
-    //////////
+    //////////////////////
     $('#createXlsx').click(function () {
         var checkInput = routeSel.getSelectedItems();
         if(checkChoice(checkInput))
@@ -469,7 +480,7 @@ $(document).ready(function () {
         $('.content-list').hide(500);
         $('#loading-indicator').show(500);
 
-        var url = '?r=route/gtroutes';
+        var url = '?r=route/ajax';
         $.ajax({
             type: "POST",
             url: url,
@@ -486,10 +497,7 @@ $(document).ready(function () {
     });
     $('#delroute').click(function () {
         console.log("delroute");
-        function compareNumeric(a,b) {
-            if (a > b )  return 1;
-            if( a < b ) return -1;
-        }
+       
         var checkInput = routeSel.getSelectedItems();
         if(checkChoice(checkInput))
         {
@@ -522,7 +530,7 @@ $(document).ready(function () {
                 if(result)
                 {
                     console.log("ОК");
-                    var url = '?r=route/gtroutes';
+                    var url = '?r=route/ajax';
 
                     $.ajax({
                         type: "POST",
@@ -533,18 +541,18 @@ $(document).ready(function () {
                             if(data == true)
                             {
                                 alert("Удаление из базы произошло успешно");
-                                location.reload();
+                                //location.reload();
                             }
                             else
                             {
                                 alert("<strong>Ошибка ! </strong> При удалении маршрута произошла ошибка" );
-                                location.reload();
+                                //location.reload();
                             }
 
                         },
                         error: function () {
                             alert("Ошибка ! Попробуйте выполнить операцию еще раз или обратитесь к администратору. ")
-                            location.reload();
+                            //location.reload();
                         }
                     });
                 }

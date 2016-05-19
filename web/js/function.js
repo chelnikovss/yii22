@@ -31,6 +31,129 @@ function checkChoice(check) {
 function compareRoute(RouteA, RouteB) {
     return RouteA.i - RouteB.i;
 }
+function compareNumeric(a,b) {
+    if (a > b )  return 1;
+    if( a < b ) return -1;
+}
+//переводим время в секунды
+function hmsToSecondsOnly(str) {
+    //приводим к формату hh:mm:cc если hh:mm
+    if(str.length<7){
+        str +=":00";
+    }
+    var p = str.split(':'),
+        s = 0, m = 1;
+
+    while (p.length > 0) {
+        s += m * parseInt(p.pop(), 10);
+        m *= 60;
+    }
+
+    return s;
+}
+/*округление hh:mm:ss до hh:mm*/
+function roundHmsToHm(str) {
+    console.log("function roundHmsToHm");
+    var time,
+        arr = str.split(':'),
+        lastSec = parseInt(arr.pop(), 10);
+    if(lastSec >29)
+    {
+        let lastMin = parseInt(arr.pop(), 10) + 1;
+        if(lastMin==60)
+        {
+            let lastHour = parseInt(arr.pop(), 10);
+            lastHour+=1;
+            arr.push(lastHour);
+            arr.push('00');
+        }
+        else
+        {
+            lastMin < 10 ? arr.push('0'+lastMin) : arr.push(lastMin);
+        }
+
+    }
+    time = arr.join(':');
+    //console.log(time);
+    return time;
+}
+function countComingAndDeparture(start,travel,parking) {
+    let distanceTime = {};
+    //console.log("calcTrackTime.exitime",calcTrackTime.exitime,"info.time время в пути",info.time);
+    let time = hmsToSecondsOnly(start)+travel;
+    //console.log("time after hmsToSecondsOnly",time);
+    //прибытие
+    let timeformat = secondsTimeSpanToHMS(time);
+    //console.log("timeformat after secondsTimeSpanToHMS",timeformat);
+    timeformat = roundHmsToHm(timeformat);
+    //console.log("timeformat after roundHmsToHm",timeformat);
+    distanceTime.coming = timeformat;
+    //console.log("distanceTime.coming",distanceTime.coming);
+    timeformat = time+hmsToSecondsOnly(parking);
+    timeformat = secondsTimeSpanToHMS(timeformat);
+    console.log("secondsTimeSpanToHMS timeformat : ",timeformat);
+    timeformat = roundHmsToHm(timeformat);
+    console.log("roundHmsToHm timeformat : ",timeformat);
+    //console.log("timeformat 2 end",timeformat);
+    distanceTime.departure = timeformat;
+    return distanceTime;
+};
+
+//добавление времени и отправления - для базы
+function addParametersrouteComingDeparture(startTime, data, offices) {
+    //start = calcTrackTime.exitime
+    //travel = info.time
+    //park = distanceTime.parkingTime
+
+    //var departureOffice = [];
+    var distanceTime = {};
+    var start;
+    var allOffice = offices;
+
+    for(var i=0, j = allOffice.length - 1; i<j; i++)
+    {
+        distanceTime.key_i = i;
+        var parkingTime = $("#"+allOffice[i].idmilliseconds+"").val();
+        var distanceParam;
+
+        if(i==0)
+        {
+            /*
+             console.log("calcTrackTime.exitime",calcTrackTime.exitime,"info.time время в пути",info.time);
+             let time = hmsToSecondsOnly(""+calcTrackTime.exitime)+info.time;
+             console.log("time after hmsToSecondsOnly",time);
+             //прибытие
+             let timeformat = secondsTimeSpanToHMS(time);
+             console.log("timeformat after secondsTimeSpanToHMS",timeformat);
+             timeformat = roundHmsToHm(timeformat);
+             console.log("timeformat after roundHmsToHm",timeformat);
+             distanceTime.coming = timeformat;
+             console.log("distanceTime.coming",distanceTime.coming);
+             timeformat = time+hmsToSecondsOnly(distanceTime.parkingTime+":00");
+             timeformat = secondsTimeSpanToHMS(timeformat);
+             timeformat = roundHmsToHm(timeformat);
+             console.log("timeformat 2 end",timeformat);
+             distanceTime.departure = timeformat;
+             */
+
+            start = startTime;
+        }
+        else
+        {
+            start = data[i-1].departure
+
+        }
+        console.log("i:", i, "start: ", start, "data[i].distancetime:", data[i].distancetime, "parkingTime:",parkingTime)
+        distanceParam = countComingAndDeparture(start, data[i].distancetime, parkingTime);
+        data[i].start = start;
+        data[i].coming = distanceParam.coming;
+        data[i].departure = distanceParam.departure;
+        data[i].key_i = distanceTime.key_i;
+
+    }
+}
+
+
 var locationsMain=[
     {
         "name": "Луганский почтамт",

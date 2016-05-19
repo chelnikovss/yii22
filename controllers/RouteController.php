@@ -36,8 +36,15 @@ class RouteController extends Controller
             $routes[$i]['routepost'] = $indexmail;
             $indexmail ="";
         }
+
+        return $this->render('gtroutes',['routes'=>$routes]);
+    }
+
+    public function actionAjax(){
+
         if(Yii::$app->request->isAjax)
         {
+            //exsel
             if(Yii::$app->request->post('checkInput'))
             {
                 $arrayId = Yii::$app->request->post('checkInput');
@@ -56,11 +63,12 @@ class RouteController extends Controller
                 ["track"]=> string(6) "12.839"
                 ["time"]=> string(7) "0:24:39"
                 ["parametersroute"]=> string(118) "[{"distance":6483,"parkingTime":"0:05"},{"distance":6483,"parkingTime":"0:05"},{"distance":6356,"parkingTime":"0:05"}]" }*/
-                $numberStartLine = 13;
+                $numberStartLine = 14;
                 $objPHPExcel->setActiveSheetIndex(0);
                 for($i=0, $j = count($arrayId); $i<$j; $i++)
                 {
                     $route = Route::find()->where(['id' => $arrayId[$i]])->asArray()->one();
+                    var_dump($route);
 
                     $routepost = json_decode($route["routepost"]);
 
@@ -75,6 +83,8 @@ class RouteController extends Controller
                             $text = $objPHPExcel->getActiveSheet()->getCell('C7')->getValue();
                             $text = $text.$route['numberoute'];
                             $objPHPExcel->getActiveSheet()->setCellValue('C7', "$text");
+                            $objPHPExcel->getActiveSheet()->setCellValue('E13', "$route[exitime]");
+                            //$objPHPExcel->getActiveSheet()->setCellValue('E13', "111");
                         }
 
                         //массив $parametersroute всегда меньше на 1 чем $routepost
@@ -82,7 +92,10 @@ class RouteController extends Controller
                         if($n<$k-1){
                             //$parkingTime = $parametersroute[$n]->parkingTime;
                             $objPHPExcel->getActiveSheet()
+                                ->setCellValue('B'.$number, $parametersroute[$n]->distancetimetext)
+                                ->setCellValue('C'.$number, $parametersroute[$n]->coming)
                                 ->setCellValue('D'.$number, $parametersroute[$n]->parkingTime)
+                                ->setCellValue('E'.$number, $parametersroute[$n]->departure)
                                 ->setCellValue('F'.$number, $parametersroute[$n]->distance);
                         }
 
@@ -104,13 +117,16 @@ class RouteController extends Controller
                     //$objWriter->save(str_replace(__FILE__,'xlsx/filename1.xlsx',__FILE__));
                 }
                 echo "__FILE__".__FILE__."<br>";
+                // Завершаем приложение
                 return;
             }
+
+            //удаление
             if(Yii::$app->request->post('checkRoute'))
             {
                 $arrayId = Yii::$app->request->post('checkRoute');
 
-                for($i =0, $len = count($arrayId);$i<$len; $i++)
+                for($i = 0, $len = count($arrayId); $i<$len; $i++)
                 {
                     $route = Route::findOne($arrayId[$i]);
                     $res = $route->delete();
@@ -128,7 +144,6 @@ class RouteController extends Controller
             }
         }
 
-        return $this->render('gtroutes',['routes'=>$routes]);
     }
 
     public function getJson(){
