@@ -38,8 +38,9 @@ AppAsset::register($this);
         'items' => [
             ['label' => 'Расчет маршрута', 'url' => ['/site/main']],
 //            ['label' => 'Home', 'url' => ['/site/index']],
-            ['label' => 'Стандартные маршруты', 'url' => ['/route/gtroutes']],
-            ['label' => 'About', 'url' => ['/site/about']],
+            ['label' => 'Формирование маршрута', 'url' => ['/formationroute/choose']],
+            //['label' => 'Стандартные маршруты', 'url' => ['/route/gtroutes']],
+            // ['label' => 'About', 'url' => ['/site/about']],
             ['label' => 'Contact', 'url' => ['/site/contact']],
 
             Yii::$app->user->isGuest ? (
