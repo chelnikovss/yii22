@@ -22,7 +22,24 @@ class FormationrouteController extends Controller
     public function actionChoose()
     {
         $postcenters = Postcenters::find()->all();
+        $postoffices = [];
+        foreach ($postcenters as $post)
+        {
+            $postoffices[]=[
+                'idoffices' => $post->idoffices,
+                'nameoffices' => $post->nameoffices
+            ];
+        }
 
-        return $this->render('choose',['postcenters'=>$postcenters]);
+        return $this->render('choose',['postoffices'=>$postoffices]);
+    }
+    public function actionCreate()
+    {
+        $postoffices = [];
+        $request = Yii::$app->request;
+        $postoffices['id'] = $request->post('dataroute');;
+        $postoffices['nameoffices'] = $request->post('optradio');
+
+        return $this->render('create',['postoffices'=>$postoffices]);
     }
 }
