@@ -2,6 +2,7 @@
 namespace app\controllers;
 
 use app\models\Postcenters;
+use app\models\Centerspost;
 use Yii;
 use yii\filters\AccessControl;
 use yii\web\Controller;
@@ -25,8 +26,8 @@ class FormationrouteController extends Controller
         $postoffices = [];
         foreach ($postcenters as $post)
         {
-            $postoffices[]=[
-                'idoffices' => $post->idoffices,
+            $postoffices[] = [
+                'idcenter' => $post->idcenter,
                 'nameoffices' => $post->nameoffices
             ];
         }
@@ -37,9 +38,14 @@ class FormationrouteController extends Controller
     {
         $postoffices = [];
         $request = Yii::$app->request;
-        $postoffices['id'] = $request->post('dataroute');;
-        $postoffices['nameoffices'] = $request->post('optradio');
+        $optradio = explode('|',$request->post('optradio'));
+        $postoffices['nameoffices'] = $optradio[0];
+        $postoffices['id'] = $optradio[1];
+        $postoffices['dataroute'] = $request->post('dataroute');
 
-        return $this->render('create',['postoffices'=>$postoffices]);
+        $postcenters = Centerspost::find()->where(['id_center' =>$postoffices['id']])->all();
+
+
+        return $this->render('create',['postcenters'=>$postcenters, 'postoffices' => $postoffices]);
     }
 }

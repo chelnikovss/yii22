@@ -96,3 +96,9 @@ body.loading .modalajax {
 #calc{
     display: none;
 }
+.amendment{
+    margin-top: 10px !important;
+}
+.timetransport{
+    padding-bottom:5px;
+}

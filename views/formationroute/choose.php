@@ -7,17 +7,17 @@ $this->params['breadcrumbs'][] = $this->title;
 <?= Html::beginForm(['formationroute/create', ], 'post') ?>
         <div class="form-group">
         <label for="data">Дата</label>
-        <input id="data" type="date" name="dataroute" required>
+        <input id="data" type="date" name="dataroute" value="<?php echo date("Y-m-d");?>" required/>
         <p class="help-block">Введите дату выполнения маршрута</p>
         </div>
         <div class="form-group">
             <?php foreach($postoffices as $key=>$post): ?>
                 <div class="radio">
                         <?php
-                        if($key == 0):
-                            echo Html::radio('optradio',true, ['label'=>$post['nameoffices'],'id'=>$post['idoffices'],'value'=>$post['nameoffices']]);
+                        if($key == 2):
+                            echo Html::radio('optradio',true, ['label'=>$post['nameoffices'],'id'=>$post['idcenter'],'value'=>$post['nameoffices'].'|'.$post['idcenter']]);
                         else:
-                            echo Html::radio('optradio',false, ['label'=>$post['nameoffices'],'id'=>$post['idoffices'],'value'=>$post['nameoffices']]);
+                            echo Html::radio('optradio',false, ['label'=>$post['nameoffices'],'id'=>$post['idcenter'],'value'=>$post['nameoffices'].'|'.$post['idcenter']]);
                         endif;
                         ?>
                 </div>
