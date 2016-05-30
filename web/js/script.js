@@ -1279,5 +1279,7 @@ $(document).ready(function () {
         $("#calc").show();
 
     });
+    
+    
 
 });

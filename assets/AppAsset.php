@@ -27,10 +27,11 @@ class AppAsset extends AssetBundle
         //'http://maps.googleapis.com/maps/api/js?v=3&sensor=false&callback=initialize',
         'js/script.js',
         'js/function.js',
-        'js/bootbox.min.js',
+        //'js/bootbox.min.js',
     ];
     public $depends = [
         'yii\web\YiiAsset',
         'yii\bootstrap\BootstrapAsset',
+
     ];
 }

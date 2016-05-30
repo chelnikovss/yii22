@@ -102,3 +102,32 @@ body.loading .modalajax {
 .timetransport{
     padding-bottom:5px;
 }
+.seeSelect{
+    color: lightseagreen;
+    font-weight: bold;
+}
+.typestransport{
+
+    background: #f3b7b7;
+}
+/*Button disabled - CSS color class*/
+.btn-disable
+{
+    cursor: default;
+    pointer-events: none;
+    color: #c0c0c0;
+    background-color: #ffffff;
+    border-color: #ffffff;
+
+}
+.placebreak{
+    font-weight:bold;
+
+}
+.placebreak-hide{
+    display: none;
+}
+.chosen-status{
+    background: rgba(32,178,170,.4);
+
+}
