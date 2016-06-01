@@ -3,8 +3,9 @@ use yii\helpers\Html;
 use \app\assets\AppCreate;
 AppCreate::register($this);
 ?>
-<h2>Маршрут <small>на <?=date("d-m-Y",strtotime($postoffices['dataroute']));?></small></h2>
-<?= Html::beginForm(['formationroute/xxx', ], 'post') ?>
+<img src="./img/285.gif" id="loading-indicator">
+<h2 data-idcenter="<?=$postoffices['id'];?>">Маршрут <small>на <?=date("d-m-Y",strtotime($postoffices['dataroute']));?></small></h2>
+<?= Html::beginForm(['formationroute/xxx',], 'post', ['id' => 'mainform' ]) ?>
 <ul class="list-group">
     <li class="list-group-item">
         <div class="row transport">
@@ -71,5 +72,7 @@ AppCreate::register($this);
     <?= Html::Button('Добавить новый маршрут', ['id' =>'add-new-route', 'class' => 'btn btn-primary btn-disable',]) ?>
     <?= Html::submitButton('Сформировать расписание', ['id' =>'shape-schedule', 'class' => 'btn btn-primary btn-disable',]) ?>
 <?= Html::endForm() ?>
+
+<div class="alert alert-info" style="margin-top: 20px;"></div>
 
 

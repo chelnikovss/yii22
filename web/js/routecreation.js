@@ -1,12 +1,17 @@
 $(document).ready(function () {
     var routeAll = [];
     var flagReturn = [];
+    var clickToogle = 0;
+    var count = 0;
+   // $('.alert-info').hide();
+    var pochtaSel = new pochtaSelected();
+    var idSelectCheckbox;
     console.log("start script routecreation.js");
     /*
     * выбор почтовых отделений
     */
     function pochtaSelected() {
-       let count = 0;
+        count = 0;
        this.routeInputId = [];
        this.checkItem = function (event) {
 
@@ -153,9 +158,6 @@ $(document).ready(function () {
         }
    }
 
-    var pochtaSel = new pochtaSelected();
-    var idSelectCheckbox;
-
     $("input.pochta-input ").click(function(event) {
         pochtaSel.checkItem(event);
         idSelectCheckbox = pochtaSel.getSelectedItems(event);
@@ -164,6 +166,14 @@ $(document).ready(function () {
 
     $("#create-route").click(function (e) {
         console.log("#create-routes");
+        if(clickToogle==1)
+        {
+            $('body').addClass('typestransport');
+            alert("Вы должны нажать кнопку 'Добавить новый маршрут', после чего 'Создать маршрут' ");
+            $('body').removeClass('typestransport');
+            return;
+        }
+
         flagReturn = [];
         if(!$('input[name="typestransport"]').is(":checked"))
         {
@@ -233,40 +243,108 @@ $(document).ready(function () {
         //start get data from form
         var addPochta = {};
         //get data radio button
-        addPochta.typestransport = $('input[name=typestransport]:checked').val();
+        addPochta.typeStransport = $('input[name=typestransport]:checked').val();
+        let typeStransportNameTemp =  $('input[name=typestransport]:checked').parent().text();
+        typeStransportNameTemp = $.trim(typeStransportNameTemp);
+        addPochta.typeStransportName = typeStransportNameTemp;
         addPochta.arrPochta = [];
 
         //console.log("addPochta:", addPochta,"idSelectCheckbox:", idSelectCheckbox);
-        for(let i = 0, len = idSelectCheckbox.length;i<len;i++)
+        for(let i = 0, len = idSelectCheckbox.length; i<len; i++)
         {
-            var Pochta = {};
+            let Pochta = {};
             $id = $('#'+idSelectCheckbox[i]);
             Pochta.idpochta = idSelectCheckbox[i];
-            Pochta.serialnumber = $id.data('count');
+            console.log("id.data('count') = ",$id.data('count'),"id.attr('data-count') = ",$id.attr('data-count'));
+
             let name = $id.parent('label').text();
             name = $.trim(name);
             Pochta.name = name;
+            Pochta.idcenter = $('h2').attr('data-idcenter');
             Pochta.adress = $id.data('adress');
-            (addPochta.arrPochta).push(Pochta);
-        }
+            Pochta.serialnumber = $id.attr('data-count');
 
+            if(Pochta.serialnumber.indexOf('|') == -1)
+            {
+                (addPochta.arrPochta).push(Pochta);
+            }
+            else
+            {
+                //если несколько раз кликнули, разбираем -  по Луганску Центральнаю кассу
+
+                var arrSeriarNumber = (Pochta.serialnumber).split('|');
+                console.log("arrSeriarNumber: ",arrSeriarNumber);
+                for(let i = 0, len = arrSeriarNumber.length; i<len; i++)
+                {
+                    //без этой переменной перекрываеться let Pochta = {};
+                    let tempPochta = {};
+                    tempPochta.idpochta = Pochta.idpochta;
+                    tempPochta.name = Pochta.name;
+                    tempPochta.idcenter = Pochta.idcenter;
+                    tempPochta.adress = Pochta.adress;
+                    tempPochta.serialnumber = arrSeriarNumber[i];
+                    tempPochta.i = i;
+
+                    console.log("i:",i,"arrSeriarNumber[i]: ",arrSeriarNumber[i]);
+                    console.log("Pochta: ",tempPochta, "addPochta.arrPochta: ",addPochta.arrPochta);
+
+                    (addPochta.arrPochta).push(tempPochta);
+                }
+            }
+
+        }
         addPochta.timeDeparture = $('#time-departure').val();
         addPochta.timeSharing = $('#time-sharing').val();
         addPochta.placeBreakIdPochta = $('#place-break').val();
         addPochta.timeDurationBreak = $('#duration-break').val();
-        addPochta.routeName = $('#route-name').val();
-
         routeAll.push(addPochta);
         console.log("addPochta:",addPochta,"routeAll:",routeAll);
+        var nameRouteStart = $('#route-name').val();
+        for(i in addPochta.arrPochta)
+        {
+            if(addPochta.arrPochta[i].serialnumber == 2)
+            {
+                let name  = nameRouteStart+"-"+addPochta.arrPochta[i].name;
+                $('#route-name').val(name);
+            }
+        }
+        addPochta.routeName = $('#route-name').val();
         //end get data from form
+
         $('#add-new-route').removeClass('btn-disable').animate({'opacity':'.5'},750,function () {
             $('#add-new-route').animate({'opacity':'1'},750);
         });
         $('#shape-schedule').removeClass('btn-disable').animate({'opacity':'.5'},750,function () {
             $('#shape-schedule').animate({'opacity':'1'},750);
+            $('.alert-info').text("");
+            for(var i=0,len = routeAll.length; i<len; i++)
+            {
+                if (i == 0)
+                    $('.alert-info').append("Маршрут № "+(i+1)+"<br />");
+                else
+                    $('.alert-info').append("<br />"+"Маршрут № "+(i+1)+"<br />");
+                $('.alert-info').append("Название маршрута: "+routeAll[i].routeName+"<br />");
+
+                $('.alert-info').append(routeAll[i].typeStransportName+" : "+routeAll[i].typeStransport+"<br />");
+                routeAll[i].arrPochta.sort(function (a,b) {
+                    return parseFloat(a.serialnumber) - parseFloat(b.serialnumber)
+                });
+                for(let j = 0, len2 = routeAll[i].arrPochta.length; j<len2; j++)
+                {
+                    let str = routeAll[i].arrPochta[j].serialnumber +") "+routeAll[i].arrPochta[j].name;
+                    $('.alert-info').append(str+ ". ");
+                }
+                $('.alert-info').append("<br />"+"Время выезда из гаража: "+routeAll[i].timeDeparture);
+                $('.alert-info').append("<br />"+"Время обмена: "+routeAll[i].timeSharing);
+                $('.alert-info').append("<br />"+"Продолжительность перерыва: "+routeAll[i].timeDurationBreak);
+            }
         });
+        clickToogle++;
         
     })
+    /*
+    * окраска селекта для юзера
+    */
     $("#place-break").click(function () {
         console.log("#place-break click")
         if($('#place-break').val() == -1)
@@ -280,5 +358,47 @@ $(document).ready(function () {
             $('#place-break').removeClass('typestransport');
         }
     });
+
+    /*
+     * Удаляем данные с формы и обнуляем переменные
+     */
+    $("#add-new-route").click(function () {
+        console.log("click function #add-new-route");
+        clickToogle--;
+        $("#mainform")[0].reset();
+        count = 0;
+        $('.checkbox>span').text("");
+        idSelectCheckbox.length = 0;
+        $(".pochta-input").attr("data-count" , '');
+        $('option', '#place-break').not(':eq(0)').remove();
+        $('.placebreak').addClass('placebreak-hide');
+        $("html, body").animate({ scrollTop: 0 }, "slow");
+    })
+
+    /*
+    *
+    */
+    $('#shape-schedule').click(function (e) {
+        e.preventDefault();
+        console.log("click #shape-schedule");
+
+        //$('form').hide(500);
+        //$('#loading-indicator').show(500);
+
+        var url = '?r=formationroute/createxsel';
+
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: {routeAll: routeAll},
+            success: function (data) {
+
+                //console.log("data ", data);
+                //alert("Exsel файл сгенерирован")
+                //$('#mainformt').show(500);
+                //$('#loading-indicator').hide(500);
+            }
+        })
+    })
 
 });
