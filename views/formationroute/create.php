@@ -4,7 +4,7 @@ use \app\assets\AppCreate;
 AppCreate::register($this);
 ?>
 <img src="./img/285.gif" id="loading-indicator">
-<h2 data-idcenter="<?=$postoffices['id'];?>">Маршрут <small>на <?=date("d-m-Y",strtotime($postoffices['dataroute']));?></small></h2>
+<h2 data-idcenter="<?=$postoffices['id'];?>" data-tdate="<?=$postoffices['dataroute'];?>">Маршрут <small>на <?=date("d-m-Y",strtotime($postoffices['dataroute']));?></small></h2>
 <?= Html::beginForm(['formationroute/xxx',], 'post', ['id' => 'mainform' ]) ?>
 <ul class="list-group">
     <li class="list-group-item">

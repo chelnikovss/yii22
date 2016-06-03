@@ -60,12 +60,16 @@ class FormationrouteController extends Controller
                     $arrDataBD = [];
                     foreach ($routeAll[$i] as $key => $route)
                     {
+
                         if($key == 'typeStransport')
                         {
                             $startFinish = explode('|', $route);
                             $arrDataBD['typeStransportStart'] = $startFinish[0];
                             $arrDataBD['typeStransportFinish'] = $startFinish[1];
                             //echo $arrDataBD['typeStransportStart']."---".$arrDataBD['typeStransportFinish']."<br />";
+                        }
+                        if($key == 'date'){
+                            $arrDataBD['date'] = $route;
                         }
                         if($key == 'timeDeparture')
                         {
@@ -96,11 +100,10 @@ class FormationrouteController extends Controller
                         {
                             for($i = 0, $len = count($route) - 1; $i<$len; $i++)
                             {
-
                                 //var_dump($route);
                                 $j=$i+1;
-                                echo $route[$i]['idpochta']."-".$route[$i+1]['idpochta']."<br />";
-                                echo "idcenter = ".$route[$j]['idcenter']."<br />";
+                                //echo $route[$i]['idpochta']."-".$route[$i+1]['idpochta']."<br />";
+                                //echo "idcenter = ".$route[$j]['idcenter']."<br />";
                                 $idcenter = $route[$i]['idcenter'];
                                 $idpochtastart = $route[$i]['idpochta'];
                                 $idpochtafinish = $route[$j]['idpochta'];
@@ -118,58 +121,100 @@ class FormationrouteController extends Controller
                                     if($idpochtafinish == 14)
                                         $idpochtafinish = 4;
                                 }
-                                echo " route[j]['namepochta'] = ".$route[$j]['name'];
                                 $sql = "SELECT distance FROM distancesmatrix WHERE `id_center`='$idcenter' AND `id_centerspost_start`='$idpochtastart' AND `id_centerspost_finish`='$idpochtafinish'";
                                 $distance = Distancesmatrix::findBySql($sql)->asArray()->one();
-                                echo "distance = ".$distance['distance']."<br />";
                                 // 40 км/ч = 11 м/c
                                 $timeWay = ($distance['distance']*1000)/11;
-                                echo "time = ".$timeWay."<br />";
-                                $arrDataBD[] = array('namepochta'=>$route[$j]['name'],'timeWay' => $this->changeTimeFormatHM($timeWay),'distance' => $distance['distance']);
-                                echo "time HH::MM = ".$this->changeTimeFormatHM($timeWay)."<br />";
+                                $arrDataBD[] = array('idpochta' =>$route[$j]['idpochta'],'namepochta'=>$route[$j]['name'],'timeWay' => $this->secondToHMS($timeWay),'distance' => $distance['distance']);
                             }
                         }
                     }
                     var_dump($arrDataBD);
-                    //start exsel
+                    //start excel
                     $inputFileName = './patternxsl/pattern.xlsx';
-
                     $objPHPExcel = \PHPExcel_IOFactory::load($inputFileName);
-
+                    //start line in excel file
                     $numberStartLine = 19;
-
                     $objPHPExcel->setActiveSheetIndex(0);
-
-                    for($i=0, $len = count($arrDataBD); $i<$len; $i++)
+                    $n = 0;
+                    $start = 0;
+                    $startFormatExcelFile = true;
+                    $endTime = 0;
+                    foreach($arrDataBD as $key=>$value)
                     {
-                        echo "i = ".$i."<br />";
-                        if($i == 0)
+                        if($startFormatExcelFile)
                         {
-
+                            $timeData = strtotime($arrDataBD['date']);
+                            $timeData = date("d-m-Y",$timeData);
+                            $objPHPExcel->getActiveSheet()->setCellValue('C9', $timeData." г.");
                             $objPHPExcel->getActiveSheet()->setCellValue('E17', $arrDataBD['timeStart']);
+                            $objPHPExcel->getActiveSheet()->setCellValue('F18', $arrDataBD['typeStransportStart']);
+                            if($arrDataBD['typeStransportStart'] == 8)
+                            {
+                                $start = '00:15';
+                            }
+                            elseif($arrDataBD['typeStransportStart'] == 2)
+                            {
+                                $start = '00:05';
+                            }
+                            $objPHPExcel->getActiveSheet()->setCellValue('B18', $start);
+                            $tempTime = $this->hmsToSecond($arrDataBD['timeStart'])+$this->hmsToSecond($start);
+                            $endTime = $this->hmsToSecond($arrDataBD['timechange'])+$tempTime;
+                            $endTime = $this->secondToHMS($endTime);
+                            $tempTime = $this->secondToHMS($tempTime);
+                            $objPHPExcel->getActiveSheet()->setCellValue('C18', $tempTime);
+                            $objPHPExcel->getActiveSheet()->setCellValue('D18', $arrDataBD['timechange']);
+                            $objPHPExcel->getActiveSheet()->setCellValue('E18', $endTime);
+                            $startFormatExcelFile = false;
                         }
-                        $number = $numberStartLine+$i;
-                        $objPHPExcel->getActiveSheet()->setCellValue('A'.$number, $i+1);
-                        
+
+                        if(!is_string($key))
+                        {
+                            $number = $numberStartLine+$n;
+                            $objPHPExcel->getActiveSheet()->setCellValue('F'.$number, $arrDataBD[$key]['distance']);
+                            $objPHPExcel->getActiveSheet()->setCellValue('G'.$number, $arrDataBD[$key]['namepochta']);
+                            ///time start
+                            $objPHPExcel->getActiveSheet()->setCellValue('B'.$number, $arrDataBD[$key]['timeWay']);
+                            $tempTime = $this->hmsToSecond($arrDataBD[$key]['timeWay'])+$this->hmsToSecond($endTime);
+                            $objPHPExcel->getActiveSheet()->setCellValue('C'.$number, $this->secondToHMS($tempTime));
+                            //учитываем время перерыва
+                            if($arrDataBD['idbreak'] == $arrDataBD[$key]['idpochta'])
+                            {
+                                $timeBreak = $this->hmsToSecond($arrDataBD['timebreak']) + $this->hmsToSecond($arrDataBD['timechange']);
+                                $timeBreak = $this->secondToHMS($timeBreak);
+                                $objPHPExcel->getActiveSheet()->setCellValue('D'.$number, $timeBreak);
+                                $endTime =  $this->hmsToSecond($timeBreak) + $tempTime;
+                                //$objPHPExcel->getActiveSheet()->setCellValue('E'.$number, $endTime);
+                            }
+                            else
+                            {
+                                $objPHPExcel->getActiveSheet()->setCellValue('D'.$number, $arrDataBD['timechange']);
+                                $endTime = $this->hmsToSecond($arrDataBD['timechange'])+$tempTime;
+                            }
+                            $endTime = $this->secondToHMS($endTime);
+                            $objPHPExcel->getActiveSheet()->setCellValue('E'.$number, $endTime);
+                            ///time end
+                            $objPHPExcel->getActiveSheet()->setCellValue('A'.$number, $n+1);
+                            $n++;
+                        }
+
                     }
-                    $objPHPExcel->getActiveSheet()->setTitle('111');
+                    $objPHPExcel->getActiveSheet()->setTitle($arrDataBD['routeName']);
                     $objWriter = \PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
                     $currentTime = time();
-                    $nameFile = $currentTime;
-
-                    $nameFile = "xlsx/Marchrut-_".$nameFile.".xlsx";
-
+                    $routeName = mb_convert_encoding($arrDataBD['routeName'],'Windows-1251', 'UTF-8');
+                    $nameFile = $routeName.'-('.$timeData.")-".$currentTime;
+                    $nameFile = "xlsx/Marchrut-".$nameFile.".xlsx";
                     $objWriter->save(str_replace(__FILE__,$nameFile,__FILE__));
-
                     echo "__FILE__".__FILE__."<br>";
-
-                    //end exsel
+                    //end excel
                 }
                 return;
             }
         }
     }
-    function changeTimeFormatHM($s)
+    /*перевод секунд в формата времени HH:MM:SS*/
+    function secondToHMS($s)
     {
         $h = floor($s/3600);
         $s-=$h*3600;
@@ -188,4 +233,25 @@ class FormationrouteController extends Controller
 
         return ($h<10?'0'.$h:$h).":".($m<10?'0'.$m:$m);
     }
-}
+    /*перевод HH:MM:SS в секунды*/
+    function hmsToSecond($timeHHMM)
+    {
+        if(count($timeHHMM)<7)
+            $timeHHMM .=":00";
+
+        $p = explode(":",$timeHHMM);
+        $s = 0;
+        $m = 1;
+
+        while (count($p)>0)
+        {
+            $s += $m * intval(array_pop($p));
+            $m*=60;
+        }
+
+        return $s;
+
+
+    }
+
+    }

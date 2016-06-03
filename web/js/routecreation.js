@@ -247,6 +247,7 @@ $(document).ready(function () {
         let typeStransportNameTemp =  $('input[name=typestransport]:checked').parent().text();
         typeStransportNameTemp = $.trim(typeStransportNameTemp);
         addPochta.typeStransportName = typeStransportNameTemp;
+        addPochta.date = $('h2').attr('data-tdate');
         addPochta.arrPochta = [];
 
         //console.log("addPochta:", addPochta,"idSelectCheckbox:", idSelectCheckbox);
@@ -261,6 +262,7 @@ $(document).ready(function () {
             name = $.trim(name);
             Pochta.name = name;
             Pochta.idcenter = $('h2').attr('data-idcenter');
+            
             Pochta.adress = $id.data('adress');
             Pochta.serialnumber = $id.attr('data-count');
 
