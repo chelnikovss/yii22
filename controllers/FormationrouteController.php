@@ -7,6 +7,7 @@ use app\models\Distancesmatrix;
 use Yii;
 use yii\filters\AccessControl;
 use yii\web\Controller;
+use yii\helpers\BaseFileHelper;
 
 //use app\models\Formation;
 class FormationrouteController extends Controller
@@ -55,12 +56,16 @@ class FormationrouteController extends Controller
             if(Yii::$app->request->post('routeAll'))
             {
                 $routeAll = Yii::$app->request->post('routeAll');
+                $inputFileName = './patternxsl/pattern.xlsx';
+                $objPHPExcel = \PHPExcel_IOFactory::load($inputFileName);
                 for($i = 0, $len = count($routeAll); $i<$len; $i++)
                 {
+                    //echo "start xsl"."<br />";
                     $arrDataBD = [];
+                    //echo "i = ".$i."<br />--ttt--";
+                    //echo "len  = ".$len."<br />";
                     foreach ($routeAll[$i] as $key => $route)
                     {
-
                         if($key == 'typeStransport')
                         {
                             $startFinish = explode('|', $route);
@@ -98,19 +103,21 @@ class FormationrouteController extends Controller
                         }
                         if($key == 'arrPochta')
                         {
-                            for($i = 0, $len = count($route) - 1; $i<$len; $i++)
+                            for($k = 0, $ln = count($route) - 1; $k<$ln; $k++)
                             {
-                                //var_dump($route);
-                                $j=$i+1;
+                                $j=$k+1;
                                 //echo $route[$i]['idpochta']."-".$route[$i+1]['idpochta']."<br />";
                                 //echo "idcenter = ".$route[$j]['idcenter']."<br />";
-                                $idcenter = $route[$i]['idcenter'];
-                                $idpochtastart = $route[$i]['idpochta'];
+                                $idcenter = $route[$k]['idcenter'];
+                                $idpochtastart = $route[$k]['idpochta'];
+                                $idpochtaConststart =  $idpochtastart;
                                 $idpochtafinish = $route[$j]['idpochta'];
+                                $idpochtaConstfinish = $idpochtafinish;
+                                //TODO
                                 //для первомайска
                                 // если $idpochtastart = 15 заменяем на 1
                                 // если $idpochtafinish = 14 заменяем на 4
-                                if($route[$i]['idcenter'] == 2)
+                                if($route[$k]['idcenter'] == 2)
                                 {
                                     if($idpochtastart == 15)
                                         $idpochtastart = 1;
@@ -125,14 +132,12 @@ class FormationrouteController extends Controller
                                 $distance = Distancesmatrix::findBySql($sql)->asArray()->one();
                                 // 40 км/ч = 11 м/c
                                 $timeWay = ($distance['distance']*1000)/11;
-                                $arrDataBD[] = array('idpochta' =>$route[$j]['idpochta'],'namepochta'=>$route[$j]['name'],'timeWay' => $this->secondToHMS($timeWay),'distance' => $distance['distance']);
+                                $arrDataBD[] = array('idpochta' =>$route[$j]['idpochta'],'namepochta'=>$route[$j]['name'],'timeWay' => $this->secondToHMS($timeWay),'distance' => $distance['distance'],'idpochtaConststart'=>$idpochtaConststart,'idpochtaConstfinish'=>$idpochtaConstfinish);
                             }
                         }
+
                     }
-                    var_dump($arrDataBD);
                     //start excel
-                    $inputFileName = './patternxsl/pattern.xlsx';
-                    $objPHPExcel = \PHPExcel_IOFactory::load($inputFileName);
                     //start line in excel file
                     $numberStartLine = 19;
                     $objPHPExcel->setActiveSheetIndex(0);
@@ -140,10 +145,18 @@ class FormationrouteController extends Controller
                     $start = 0;
                     $startFormatExcelFile = true;
                     $endTime = 0;
+                    $flayWay = true;
+                    $total = array('distanse' => 0,'time' => 0);
+                    end($arrDataBD);
+                    $last = key($arrDataBD);
                     foreach($arrDataBD as $key=>$value)
                     {
                         if($startFormatExcelFile)
                         {
+                            //$text = $objPHPExcel->getActiveSheet()->getCell('C8')->getValue();
+                            $numberMarchrut = $i+1;
+                            $text ="движения автотранспорта по маршруту  №"."$numberMarchrut ".$arrDataBD['routeName'];
+                            $objPHPExcel->getActiveSheet()->setCellValue('C8', $text);
                             $timeData = strtotime($arrDataBD['date']);
                             $timeData = date("d-m-Y",$timeData);
                             $objPHPExcel->getActiveSheet()->setCellValue('C9', $timeData." г.");
@@ -171,42 +184,118 @@ class FormationrouteController extends Controller
                         if(!is_string($key))
                         {
                             $number = $numberStartLine+$n;
-                            $objPHPExcel->getActiveSheet()->setCellValue('F'.$number, $arrDataBD[$key]['distance']);
-                            $objPHPExcel->getActiveSheet()->setCellValue('G'.$number, $arrDataBD[$key]['namepochta']);
-                            ///time start
-                            $objPHPExcel->getActiveSheet()->setCellValue('B'.$number, $arrDataBD[$key]['timeWay']);
-                            $tempTime = $this->hmsToSecond($arrDataBD[$key]['timeWay'])+$this->hmsToSecond($endTime);
-                            $objPHPExcel->getActiveSheet()->setCellValue('C'.$number, $this->secondToHMS($tempTime));
-                            //учитываем время перерыва
-                            if($arrDataBD['idbreak'] == $arrDataBD[$key]['idpochta'])
+                            if($arrDataBD[$key]['idpochtaConstfinish'] == 15)
                             {
-                                $timeBreak = $this->hmsToSecond($arrDataBD['timebreak']) + $this->hmsToSecond($arrDataBD['timechange']);
-                                $timeBreak = $this->secondToHMS($timeBreak);
-                                $objPHPExcel->getActiveSheet()->setCellValue('D'.$number, $timeBreak);
-                                $endTime =  $this->hmsToSecond($timeBreak) + $tempTime;
-                                //$objPHPExcel->getActiveSheet()->setCellValue('E'.$number, $endTime);
+                                $objPHPExcel->getActiveSheet()->setCellValue('H'.$number, $arrDataBD[$key]['distance']);
+                                $total['distanse']+=$arrDataBD[$key]['distance'];
+                                echo $total['distanse']." = total <br />"."n = "."$n"."<br /><br />";
+                                $objPHPExcel->getActiveSheet()->setCellValue('I'.$number, $arrDataBD[$key]['timeWay']);
+                                $total['time']+=$this->hmsToSecond($arrDataBD[$key]['timeWay']);
+                                echo "endTime 1 = ".$endTime."<br />";
+                                echo "arrDataBD[key]['timeWay'] = ".$arrDataBD[$key]['timeWay']."<br />";
+                                $tempTime = $this->hmsToSecond($arrDataBD[$key]['timeWay']) + $this->hmsToSecond($endTime);
+                                echo "tempTime  = ".$tempTime."<br />";
+                                $t = $this->secondToHMS($tempTime);
+                                echo "t  = ".$t."<br />";
+                                $objPHPExcel->getActiveSheet()->setCellValue('J'.$number, $t);
+                                $objPHPExcel->getActiveSheet()->setCellValue('K'.$number, $arrDataBD['timechange']);
+                                $endTime = $this->hmsToSecond($arrDataBD['timechange']) + $tempTime;
+                                $endTime = $this->secondToHMS($endTime);
+                                $objPHPExcel->getActiveSheet()->setCellValue('L'.$number, $endTime);
+                                $flayWay = false;
                             }
                             else
                             {
-                                $objPHPExcel->getActiveSheet()->setCellValue('D'.$number, $arrDataBD['timechange']);
-                                $endTime = $this->hmsToSecond($arrDataBD['timechange'])+$tempTime;
-                            }
-                            $endTime = $this->secondToHMS($endTime);
-                            $objPHPExcel->getActiveSheet()->setCellValue('E'.$number, $endTime);
-                            ///time end
-                            $objPHPExcel->getActiveSheet()->setCellValue('A'.$number, $n+1);
-                            $n++;
-                        }
+                                //в обратную сторону
+                                // первомайск idpochtaConstfinish = 15
+                                $objPHPExcel->getActiveSheet()->setCellValue(($flayWay?'F':'H').$number, $arrDataBD[$key]['distance']);
+                                $total['distanse']+=$arrDataBD[$key]['distance'];
+                                echo $total['distanse']." = total <br />"."n = "."$n"."<br /><br />";
+                                ///time start
+                                $objPHPExcel->getActiveSheet()->setCellValue(($flayWay?'B':'I').$number, $arrDataBD[$key]['timeWay']);
+                                $total['time']+=$this->hmsToSecond($arrDataBD[$key]['timeWay']);
+                                $tempTime = $this->hmsToSecond($arrDataBD[$key]['timeWay'])+$this->hmsToSecond($endTime);
+                                $objPHPExcel->getActiveSheet()->setCellValue(($flayWay?'C':'J').$number, $this->secondToHMS($tempTime));
+                                //$r = $this->secondToHMS($tempTime);
+                                //echo "r = tempTime = ".$r;
+                                //учитываем время перерыва
+                                if($arrDataBD['idbreak'] == $arrDataBD[$key]['idpochta'])
+                                {
+                                    $timeBreak = $this->hmsToSecond($arrDataBD['timebreak']) + $this->hmsToSecond($arrDataBD['timechange']);
+                                    $timeBreak = $this->secondToHMS($timeBreak);
+                                    $objPHPExcel->getActiveSheet()->setCellValue('D'.$number, $timeBreak);
+                                    $endTime =  $this->hmsToSecond($timeBreak) + $tempTime;
+                                    //$objPHPExcel->getActiveSheet()->setCellValue('E'.$number, $endTime);
+                                }
+                                else
+                                {
+                                    $objPHPExcel->getActiveSheet()->setCellValue(($flayWay?'D':'K').$number, $arrDataBD['timechange']);
+                                    $endTime = $this->hmsToSecond($arrDataBD['timechange']) + $tempTime;
+                                }
 
+                                $endTime = $this->secondToHMS($endTime);
+                                $objPHPExcel->getActiveSheet()->setCellValue(($flayWay?'E':'L').$number, $endTime);
+                                ///time end
+                                if($flayWay)
+                                    $objPHPExcel->getActiveSheet()->setCellValue('A'.$number, $n+1);
+                            }
+                                $objPHPExcel->getActiveSheet()->setCellValue('G'.$number, $arrDataBD[$key]['namepochta']);
+                                $n++;
+                        }
+                        if($last === $key)
+                        {
+                            echo $total['distanse']." = total <br />";
+                            $total['distanse']+=$arrDataBD['typeStransportFinish'];
+                            $total['distanse']+=$arrDataBD['typeStransportStart'];
+                            $number+=1;
+                            $objPHPExcel->getActiveSheet()->setCellValue('G'.$number, 'Луганск  ЦОПП, гараж');
+                            $objPHPExcel->getActiveSheet()->setCellValue('H'.$number, $arrDataBD['typeStransportFinish']);
+                            if($arrDataBD['typeStransportFinish'] == 10)
+                            {
+                                $timeLast = "00:15";
+                            }
+                            if($arrDataBD['typeStransportFinish'] == 2)
+                            {
+                                $timeLast = "00:05";
+                            }
+                            $objPHPExcel->getActiveSheet()->setCellValue('I'.$number, $timeLast);
+                            $endTime = $this->hmsToSecond($endTime) + $this->hmsToSecond($timeLast);
+                            $timeLast = $this->secondToHMS($endTime);
+                            $objPHPExcel->getActiveSheet()->setCellValue('J'.$number, $timeLast);
+                            //$objPHPExcel->getActiveSheet()->setCellValue('B'.$number,$total['distanse']);
+                            //$text = $objPHPExcel->getActiveSheet()->getCell('B50')->getValue();
+                            $text = "Протяженность маршрута ";
+                            $text = $text.$total['distanse'].' км';
+                            $objPHPExcel->getActiveSheet()->setCellValue('B50', $text);
+
+                            //$text = $objPHPExcel->getActiveSheet()->getCell('B51')->getValue();
+                            $text = "Продолжительность рабочего времени на маршруте: ";
+                            echo "total['time'] = ".$total['time']."<br />";
+                            $total['time'] += $this->hmsToSecond($timeLast);
+                            $total['time'] = $this->secondToHMS($total['time'],false);
+
+                            echo "total['time'] = ".$total['time']."<br />";
+                            $text = $text.$total['time'];
+                            $objPHPExcel->getActiveSheet()->setCellValue('B51', $text);
+                        }
+                    }
+                    $charset = 'UTF-8';
+                    $length = 31;
+                    var_dump($arrDataBD['routeName']);
+                    if(mb_strlen($arrDataBD['routeName'], $charset) > $length) {
+                        $arrDataBD['routeName'] = mb_substr($arrDataBD['routeName'], 0, 27, $charset) . '...';
                     }
                     $objPHPExcel->getActiveSheet()->setTitle($arrDataBD['routeName']);
                     $objWriter = \PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
                     $currentTime = time();
                     $routeName = mb_convert_encoding($arrDataBD['routeName'],'Windows-1251', 'UTF-8');
                     $nameFile = $routeName.'-('.$timeData.")-".$currentTime;
-                    $nameFile = "xlsx/Marchrut-".$nameFile.".xlsx";
+
+                    BaseFileHelper::createDirectory("xlsx/".$timeData);
+                    $nameFile = "xlsx/".$timeData."/Marchrut-".$nameFile.".xlsx";
                     $objWriter->save(str_replace(__FILE__,$nameFile,__FILE__));
-                    echo "__FILE__".__FILE__."<br>";
+                    echo "__FILE__".__FILE__."<br />";
+                    echo "end xsl"."<br />";
                     //end excel
                 }
                 return;
@@ -214,7 +303,7 @@ class FormationrouteController extends Controller
         }
     }
     /*перевод секунд в формата времени HH:MM:SS*/
-    function secondToHMS($s)
+    function secondToHMS($s,$flag=true)
     {
         $h = floor($s/3600);
         $s-=$h*3600;
@@ -230,8 +319,11 @@ class FormationrouteController extends Controller
             $h+=1;
             $m = 0;
         }
+        if($flag)
+            return ($h<10?'0'.$h:$h).":".($m<10?'0'.$m:$m);
+        else
+            return ($h<10?'0'.$h:$h)." час. ".($m<10?'0'.$m:$m)." мин. ";
 
-        return ($h<10?'0'.$h:$h).":".($m<10?'0'.$m:$m);
     }
     /*перевод HH:MM:SS в секунды*/
     function hmsToSecond($timeHHMM)

@@ -319,12 +319,16 @@ $(document).ready(function () {
         $('#shape-schedule').removeClass('btn-disable').animate({'opacity':'.5'},750,function () {
             $('#shape-schedule').animate({'opacity':'1'},750);
             $('.alert-info').text("");
-            for(var i=0,len = routeAll.length; i<len; i++)
+            for(var i=0, len = routeAll.length; i<len; i++)
             {
                 if (i == 0)
+                {
                     $('.alert-info').append("Маршрут № "+(i+1)+"<br />");
+                }
                 else
-                    $('.alert-info').append("<br />"+"Маршрут № "+(i+1)+"<br />");
+                {
+                    $('.alert-info').append("<br /><br />"+"Маршрут № "+(i+1)+"<br />");
+                }
                 $('.alert-info').append("Название маршрута: "+routeAll[i].routeName+"<br />");
 
                 $('.alert-info').append(routeAll[i].typeStransportName+" : "+routeAll[i].typeStransport+"<br />");
