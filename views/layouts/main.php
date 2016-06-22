@@ -40,6 +40,7 @@ AppAsset::register($this);
 //            ['label' => 'Home', 'url' => ['/site/index']],
             ['label' => 'Формирование маршрута', 'url' => ['/formationroute/choose']],
             ['label' => 'Стандартные маршруты', 'url' => ['/route/gtroutes']],
+            ['label' => 'Добавление маршрутов', 'url' => ['/formationroute/add']],
             // ['label' => 'About', 'url' => ['/site/about']],
             ['label' => 'Contact', 'url' => ['/site/contact']],
 

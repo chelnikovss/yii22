@@ -106,10 +106,29 @@ body.loading .modalajax {
     color: lightseagreen;
     font-weight: bold;
 }
-.typestransport{
 
-    background: #f3b7b7;
+@keyframes typestransport {
+    0%   { background-color: #f3b7b7; }
+    50%  { background-color: #ffffb6; }
+    100% { background-color: #f3b7b7; }
 }
+@-moz-keyframes typestransport {
+    0%   { background-color: #f3b7b7; }
+    50%  { background-color: #ffffb6; }
+    100% { background-color: #f3b7b7 }
+}
+@-webkit-keyframes typestransport {
+    0%   { background-color: #f3b7b7;}
+    50%  { background-color: #ffffb6; }
+    100% { background-color: #f3b7b7; }
+}
+
+.typestransport{
+    animation:         typestransport  1s infinite;
+    -moz-animation:    typestransport  1s infinite;
+    -webkit-animation: typestransport  1s infinite;
+}
+
 /*Button disabled - CSS color class*/
 .btn-disable
 {
@@ -130,4 +149,16 @@ body.loading .modalajax {
 .chosen-status{
     background: rgba(32,178,170,.4);
 
+}
+.panel-heading a:after {
+    font-family:'Glyphicons Halflings';
+    content:"\e114";
+    float: right;
+    color: grey;
+}
+.panel-heading a.collapsed:after {
+    content:"\e080";
+}
+.label-width{
+    width: 300px;
 }

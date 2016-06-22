@@ -1,12 +1,15 @@
 <?php
 namespace app\assets;
+
 use yii\web\AssetBundle;
-class AppCreate extends AssetBundle
+
+class AppAdd extends AssetBundle
 {
     public $basePath = '@webroot';
     public $baseUrl = '@web';
     public $js = [
-        'js/routecreation.js',
+        'js/addpochta.js',
+        'js/bootbox.min.js',
     ];
     public $depends = [
         'yii\web\YiiAsset',

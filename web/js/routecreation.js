@@ -7,7 +7,20 @@ $(document).ready(function () {
     var pochtaSel = new pochtaSelected();
     var idSelectCheckbox;
     console.log("start script routecreation.js");
-    /*
+    // $('input:checkbox').each(function (indx, element) {
+    //     var checkLoadText = $(element).parent('label').text();
+    //     checkLoadText = $.trim(checkLoadText);
+    //     console.log(checkLoadText)
+    //     if(checkLoadText == 'Луганск ЦОПП')
+    //     {
+    //         $(element).trigger('click');
+    //         pochtaSel.checkItem(element);
+    //         idSelectCheckbox = pochtaSel.getSelectedItems(element);
+    //         return false;
+    //     }
+    //
+    // });
+        /*
     * выбор почтовых отделений
     */
     function pochtaSelected() {
@@ -42,6 +55,8 @@ $(document).ready(function () {
                    {
                        $('#'+id).attr('data-count', count);
                    }
+               if(count>1)
+                   $('.amendment').removeClass('typestransport');
            }
            else
            {
@@ -96,6 +111,8 @@ $(document).ready(function () {
                    }
                )
                count--;
+               if(count<2)
+                   $('.amendment').addClass('typestransport');
            }
 
            //console.log($(this.event.target).data('numberoute'));
@@ -158,9 +175,11 @@ $(document).ready(function () {
         }
    }
 
-    $("input.pochta-input ").click(function(event) {
+    $("input.pochta-input").click(function(event) {
+        console.log("event",event);
         pochtaSel.checkItem(event);
         idSelectCheckbox = pochtaSel.getSelectedItems(event);
+
     });
 
 
@@ -209,6 +228,7 @@ $(document).ready(function () {
         {
             $('#place-break').addClass('typestransport');
             flagReturn.push(1);
+            $("html, body").animate({ scrollTop: $(window).scrollTop() - 100 }, "slow");
         }
         else
         {
@@ -249,23 +269,23 @@ $(document).ready(function () {
         addPochta.typeStransportName = typeStransportNameTemp;
         addPochta.date = $('h2').attr('data-tdate');
         addPochta.arrPochta = [];
-
         //console.log("addPochta:", addPochta,"idSelectCheckbox:", idSelectCheckbox);
         for(let i = 0, len = idSelectCheckbox.length; i<len; i++)
         {
             let Pochta = {};
             $id = $('#'+idSelectCheckbox[i]);
             Pochta.idpochta = idSelectCheckbox[i];
-            console.log("id.data('count') = ",$id.data('count'),"id.attr('data-count') = ",$id.attr('data-count'));
-
+            console.log("$id = ",$id,"id.data('count') = ",$id.data('count'),"id.attr('data-count') = ",$id.attr('data-count'));
             let name = $id.parent('label').text();
             name = $.trim(name);
             Pochta.name = name;
+            Pochta.timeSharingLocal = $('#time-sharing'+idSelectCheckbox[i]).val();
+            //номер для Луганской Центральной кассы
+            var oldI = i;
+            console.log("Pochta.timeSharingLocal = ", Pochta.timeSharingLocal);
             Pochta.idcenter = $('h2').attr('data-idcenter');
-            
             Pochta.adress = $id.data('adress');
             Pochta.serialnumber = $id.attr('data-count');
-
             if(Pochta.serialnumber.indexOf('|') == -1)
             {
                 (addPochta.arrPochta).push(Pochta);
@@ -273,7 +293,6 @@ $(document).ready(function () {
             else
             {
                 //если несколько раз кликнули, разбираем -  по Луганску Центральнаю кассу
-
                 var arrSeriarNumber = (Pochta.serialnumber).split('|');
                 console.log("arrSeriarNumber: ",arrSeriarNumber);
                 for(let i = 0, len = arrSeriarNumber.length; i<len; i++)
@@ -285,6 +304,8 @@ $(document).ready(function () {
                     tempPochta.idcenter = Pochta.idcenter;
                     tempPochta.adress = Pochta.adress;
                     tempPochta.serialnumber = arrSeriarNumber[i];
+                    //время обмена одно для всех выбранных Луганских Центральных Касс
+                    tempPochta.timeSharingLocal = $('#time-sharing'+idSelectCheckbox[oldI]).val();
                     tempPochta.i = i;
 
                     console.log("i:",i,"arrSeriarNumber[i]: ",arrSeriarNumber[i]);
@@ -293,10 +314,9 @@ $(document).ready(function () {
                     (addPochta.arrPochta).push(tempPochta);
                 }
             }
-
         }
         addPochta.timeDeparture = $('#time-departure').val();
-        addPochta.timeSharing = $('#time-sharing').val();
+        //addPochta.timeSharing = $('#time-sharing').val();
         addPochta.placeBreakIdPochta = $('#place-break').val();
         addPochta.timeDurationBreak = $('#duration-break').val();
         routeAll.push(addPochta);
@@ -346,6 +366,7 @@ $(document).ready(function () {
             }
         });
         clickToogle++;
+        $('#create-route').hide("slow");
         
     })
     /*
@@ -379,6 +400,7 @@ $(document).ready(function () {
         $('option', '#place-break').not(':eq(0)').remove();
         $('.placebreak').addClass('placebreak-hide');
         $("html, body").animate({ scrollTop: 0 }, "slow");
+        $('#create-route').show("slow");
     })
 
     /*
@@ -387,24 +409,41 @@ $(document).ready(function () {
     $('#shape-schedule').click(function (e) {
         e.preventDefault();
         console.log("click #shape-schedule");
-
-        //$('form').hide(500);
-        //$('#loading-indicator').show(500);
-
+        $("html, body").animate({ scrollTop: 0 }, "slow",function () {
+            $('#mainform').hide("slow", function () {
+                $('.alert-info').hide("slow",function () {
+                    $('#loading-indicator').show("slow");
+                });
+            });
+        });
         var url = '?r=formationroute/createxsel';
-
         $.ajax({
             type: "POST",
             url: url,
             data: {routeAll: routeAll},
             success: function (data) {
-
-                //console.log("data ", data);
-                //alert("Exsel файл сгенерирован")
-                //$('#mainformt').show(500);
-                //$('#loading-indicator').hide(500);
+                setTimeout(function () {
+                    //TODO
+                    //что возвращаем
+                    console.log("data ", data);
+                    alert("Exsel файл сгенерирован");
+                    $('#loading-indicator').hide("slow",function () {
+                        //location.reload();
+                    });
+                },2000)
+            },
+            error: function () {
+                alert("Ошибка ! Попробуйте выполнить операцию еще раз или обратитесь к администратору. ")
+                //location.reload();
             }
         })
     })
+    /*
+    *
+     */
+    $("input[name='typestransport']").change(function(){
+        $('.row.transport').removeClass('typestransport');
+    });
+
 
 });
