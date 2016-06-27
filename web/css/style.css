@@ -162,3 +162,25 @@ body.loading .modalajax {
 .label-width{
     width: 300px;
 }
+.del-pochta{
+    cursor: pointer;
+}
+.pd-rg{
+    margin-right: 10px;
+}
+.panel-title>a:hover{
+    color: #1374c1;
+    text-decoration: none;
+}
+.panel-title>a:active{
+    color: #0e5a96;
+    text-decoration: none;
+}
+.panel-title.delPochta>a:hover{
+    color: #ff6348;
+    text-decoration: none;
+}
+.panel-title.delPochta>a:active{
+    color: #ff4836;
+    text-decoration: none;
+}

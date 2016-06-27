@@ -197,8 +197,9 @@ class FormationrouteController extends Controller
                                 //echo $total['distanse']." = total <br />"."n = "."$n"."<br /><br />";
                                 $objPHPExcel->getActiveSheet()->setCellValue('I'.$number, $arrDataBD[$key]['timeWay']);
                                 $total['time']+=$this->hmsToSecond($arrDataBD[$key]['timeWay']);
-                                //echo "endTime 1 = ".$endTime."<br />";
-                                //echo "arrDataBD[key]['timeWay'] = ".$arrDataBD[$key]['timeWay']."<br />";
+                                echo "endTime 1 = ".$endTime."<br />";
+                                echo "total[time] = ".$total['time']."<br />";
+                                echo "arrDataBD[key]['timeWay'] = ".$arrDataBD[$key]['timeWay']."<br />";
                                 $tempTime = $this->hmsToSecond($arrDataBD[$key]['timeWay']) + $this->hmsToSecond($endTime);
                                 //echo "tempTime  = ".$tempTime."<br />";
                                 $t = $this->secondToHMS($tempTime);
@@ -259,6 +260,7 @@ class FormationrouteController extends Controller
                                 $timeLast = "00:05";
                             }
                             $objPHPExcel->getActiveSheet()->setCellValue('I'.$number, $timeLast);
+                            $timeLastForTotal = $timeLast;
                             $endTime = $this->hmsToSecond($endTime) + $this->hmsToSecond($timeLast);
                             $timeLast = $this->secondToHMS($endTime);
                             $objPHPExcel->getActiveSheet()->setCellValue('J'.$number, $timeLast);
@@ -271,7 +273,9 @@ class FormationrouteController extends Controller
                             //$text = $objPHPExcel->getActiveSheet()->getCell('B51')->getValue();
                             $text = "Продолжительность рабочего времени на маршруте: ";
                             echo "total['time'] = ".$total['time']."<br />";
-                            $total['time'] += $this->hmsToSecond($timeLast);
+                            echo "total['time'] = ".$timeLast."<br />";
+                            echo "hmsToSecond($timeLastForTotal) = ".$this->hmsToSecond($timeLastForTotal)."<br />";
+                            $total['time'] += $this->hmsToSecond($timeLastForTotal);
                             $total['time'] = $this->secondToHMS($total['time'],false);
 
                             echo "total['time'] = ".$total['time']."<br />";
@@ -334,7 +338,6 @@ class FormationrouteController extends Controller
                 $result = json_encode($data);
                 return $result;
             }
-
             if(Yii::$app->request->post('allRouteMatrix'))
             {
                 $allRouteMatrix = Yii::$app->request->post('allRouteMatrix');
@@ -366,6 +369,34 @@ class FormationrouteController extends Controller
                 }
                 return $result;
             }
+            if(Yii::$app->request->post('dataForDel'))
+            {
+                $dataForDel = Yii::$app->request->post('dataForDel');
+                $res = Centerspost::find()->where(['id_center' =>$dataForDel['number']])->asArray()->all();;
+                $jsonData = json_encode($res);
+                return $jsonData;
+            }
+            if(Yii::$app->request->post('idData')){
+
+                $data = Yii::$app->request->post('idData');
+                //var_dump($data);
+                $id = $data['idcenterspost'];
+                $id_center = $data['id_center'];
+                $centerspost = Centerspost::findOne($id);
+                $res = $centerspost->delete();
+                if(!$res)
+                {
+                    return false;
+                }
+                else
+                {
+                    //Customer::deleteAll('age > :age AND gender = :gender', [':age' => 20, ':gender' => 'M']);
+                    $countsDeleteRows = Distancesmatrix::deleteAll('id_center = :id_center AND (id_centerspost_start = :id_centerspost_start OR id_centerspost_finish = :id_centerspost_finish)',[':id_center'=>$id_center,':id_centerspost_start'=>$id, ':id_centerspost_finish'=>$id]);
+                    if($countsDeleteRows>1)
+                        return $countsDeleteRows;
+                }
+                return true;
+            }
         }
     }
 
@@ -395,7 +426,7 @@ class FormationrouteController extends Controller
         if($flag)
             return ($h<10?'0'.$h:$h).":".($m<10?'0'.$m:$m);
         else
-            return ($h<10?'0'.$h:$h)." час. ".($m<10?'0'.$m:$m)." мин. ";
+            return ($h<10?'0'.$h:$h)." ч. ".($m<10?'0'.$m:$m)." м. ";
 
     }
     /*перевод HH:MM:SS в секунды*/

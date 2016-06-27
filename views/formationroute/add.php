@@ -6,11 +6,12 @@ use \app\assets\AppAdd;
 AppAdd::register($this);
 ?>
 <h2>Добавление данных</h2>
+<img src="./img/285.gif" id="loading-indicator" />
 <div class="panel-group" id="accordion">
     <div class="panel panel-default">
         <div class="panel-heading">
             <h4 class="panel-title">
-                <a data-toggle="collapse" data-parent="#accordion" href="#collapse1">Добавить почтовое отделение</a>
+                <a data-toggle="collapse" data-parent="#accordion" href="#collapse1"><span class="glyphicon glyphicon-plus pd-rg"></span> Добавить почтовое отделение</a>
             </h4>
         </div>
         <div id="collapse1" class="panel-collapse collapse in">
@@ -43,8 +44,7 @@ AppAdd::register($this);
     <div class="panel panel-default">
         <div class="panel-heading">
             <h4 class="panel-title">
-                <a data-toggle="collapse" data-parent="#accordion" href="#collapse2">
-                    Добавить данные в матрицу расстояний</a>
+                <a data-toggle="collapse" data-parent="#accordion" href="#collapse2"><span class="glyphicon glyphicon-random pd-rg"></span>  Добавить данные в матрицу расстояний</a>
             </h4>
         </div>
         <div id="collapse2" class="panel-collapse collapse">
@@ -87,13 +87,49 @@ AppAdd::register($this);
         </div>
     <div class="panel panel-default">
         <div class="panel-heading">
-            <h4 class="panel-title">
-                <a data-toggle="collapse" data-parent="#accordion" href="#collapse3">
-                    Удалить</a>
+            <h4 class="panel-title delPochta">
+                <a data-toggle="collapse" data-parent="#accordion" href="#collapse3"><span class="glyphicon glyphicon-alert pd-rg"></span>  Удалить почтовое отделение</a>
             </h4>
         </div>
         <div id="collapse3" class="panel-collapse collapse">
-            <div class="panel-body">333</div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-xs-12 col-sm-12 col-md-6 col-lg-6">
+                        <div class="form-group">
+                            <select class="form-control" id="matrx-numberfordel">
+                                <option value="-1">Выберите номер центр</option>
+                                <option value="0">0 (Луганск)</option>
+                                <option value="1">1 (Алчевск)</option>
+                                <option value="2">2 (Первомайск)</option>
+                                <option value="3">3 (Антрацит)</option>
+                                <option value="4">4 (Краснодон)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-xs-12 col-sm-12 col-md-6 col-lg-6">
+                        <button id="matrx-seefordel" type="button" class="btn btn-default btn-block" data-info=""><span class="glyphicon glyphicon-th"></span> Показать все отделения для выбранного центра</button>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                        <form class="matrx-formDel" role="form">
+                            <div class="row">
+                                <table class="table table-hover">
+                                    <thead>
+                                    <tr>
+                                        <th>№</th>
+                                        <th>Почтовый центр</th>
+                                        <th>Название почтового отделения</th>
+                                        <th><span class="glyphicon glyphicon-wrench"></span></th>
+                                    </tr>
+                                    </thead>
+                                    <tbody id="matrx-formDel"></tbody>
+                                    </table>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>

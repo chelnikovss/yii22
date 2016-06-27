@@ -1,8 +1,11 @@
 $(document).ready(function () {
 
-    var allRouteMatrix = [];
+    var
+        allRouteMatrix = [],
+        allPochtaOffice = [];
 
     $('.matrx-form').hide();
+    $('.matrx-formDel').hide();
 
     $('#addpocthacenter').click(function (e) {
         e.preventDefault();
@@ -47,7 +50,7 @@ $(document).ready(function () {
                 if(data)
                 {
                     alert("Данные успешно добавленны в базу");
-                    setTimeout(function(){location.reload();},1000);
+                    setTimeout(function(){location.reload();},500);
 
                 }
                 else
@@ -63,14 +66,17 @@ $(document).ready(function () {
         });
     });
 
-    $('#matrx-getkey').click(function (e) {
-
+    $('#matrx-getkey').click(function ()
+    {
         console.log("#matrx-getkey");
-
         var keyData = {};
         keyData.idCenter = $('#matrx-numberpochta').val();
         keyData.namePochta = $.trim($('#matrx-pochta').val());
-
+        if(keyData.idCenter == -1 || keyData.namePochta.length<2)
+        {
+            alert("Вы не ввели номер центра или почтовое отделение");
+            return false;
+        }
         var url = '?r=formationroute/addpochta';
 
         $.ajax({
@@ -78,10 +84,7 @@ $(document).ready(function () {
             url: url,
             data: {keyData: keyData},
             success: function (data) {
-                //console.log("data = ", data);
                 var data = JSON.parse(data);
-                console.log("JSON.parse = ", data,'data.allOldPochta.length:', data.allOldPochta.length);
-
                 if(data && data.allOldPochta.length>0 && data.newPochta!=null)
                 {
                     alert("Ключ получен");
@@ -124,8 +127,7 @@ $(document).ready(function () {
             }
         });
     });
-    
-    
+
     $('#matrx-addroute').click(function () {
         console.log("#matrx-addroute");
         $('input[type=number]').each(function (index, element) {
@@ -155,13 +157,13 @@ $(document).ready(function () {
                 if(data)
                 {
                     alert("Данные успешно добавленны в базу");
-                    //setTimeout(function(){location.reload();},1000);
+                    setTimeout(function(){location.reload();},500);
 
                 }
                 else
                 {
                     alert("Ошибка ! Попробуйте выполнить операцию еще раз или обратитесь к администратору. ");
-                    //location.reload();
+                    setTimeout(function(){location.reload();},500);
                 }
             },
             error: function () {
@@ -170,6 +172,91 @@ $(document).ready(function () {
         });
 
 
+
+    })
+
+    $('#matrx-seefordel').click(function () {
+        console.log("#matrix-seefordel");
+        var dataForDel = {};
+        dataForDel.number = $('#matrx-numberfordel').val();
+        console.log("dataForDel before server",dataForDel);
+        if(dataForDel.number == -1)
+        {
+            alert("Вы не ввели номер центра");
+            return false;
+        }
+
+        $('#accordion').hide(500, function(){ $('#loading-indicator').show(); console.log("show loading-indicator");});
+        var url = '?r=formationroute/addpochta';
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: {dataForDel: dataForDel},
+            success: handleData,
+            error: function () {
+                alert("Ошибка ! Попробуйте выполнить операцию еще раз или обратитесь к администратору. ");
+            }
+            
+        });
+            
+        function handleData(data){
+            console.log("data from server");
+            allPochtaOffice = JSON.parse(data);
+            console.log('allPochtaOffice: ',allPochtaOffice);
+            //setTimeout(function(){
+            console.log("handleData");
+                 $('#loading-indicator').hide(500, function(){ $('#accordion').show(); });
+            //},1000);
+            if(allPochtaOffice.length<1)
+                return;
+
+            $('.matrx-formDel').show();
+
+
+            for(let i = 0, len = allPochtaOffice.length; i<len; i++)
+            {
+                $('#matrx-formDel').append('<tr><td><span class="badge">'+(i+1)+'</span></td><td>'+allPochtaOffice[i]['namecenter']+'</td><td>'+allPochtaOffice[i]['namepochta']+'</td><td><span id='+'delpochta'+allPochtaOffice[i]['idcenterspost']+' class="label btn-warning del-pochta" data-idcenter='+allPochtaOffice[i]['id_center']+' data-idcenterspost='+allPochtaOffice[i]['idcenterspost']+'>Удалить</span></td></tr>')
+
+            }
+            
+            
+        }
+
+        
+    })
+
+    $(document).on('click','.del-pochta', function () {
+        console.log(" del-pochta: ", this,this.id);
+        var idData = {};
+        idData.id_center = $(this).attr('data-idcenter');
+        idData.idcenterspost = $(this).attr('data-idcenterspost');
+        console.log("idData: ",idData);
+
+        var url = '?r=formationroute/addpochta';
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: {idData: idData},
+            success: handleData,
+            error: function () {
+                alert("Ошибка ! Попробуйте выполнить операцию еще раз или обратитесь к администратору. ");
+            }
+
+        });
+
+        function handleData(data){
+            if(data||data.length>0)
+            {
+                alert("Почтовое отделение успешно удаленно !");
+                setTimeout(function(){location.reload();},500);
+            }
+            else
+            {
+                alert("Ошибка ! Попробуйте выполнить операцию еще раз или обратитесь к администратору. ");
+                setTimeout(function(){location.reload();},500);
+            }
+
+        };
 
     })
 

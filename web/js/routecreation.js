@@ -1,11 +1,13 @@
 $(document).ready(function () {
-    var routeAll = [];
-    var flagReturn = [];
-    var clickToogle = 0;
-    var count = 0;
+    var 
+        routeAll = [],
+        flagReturn = [],
+        clickToogle = 0,
+        count = 0,
+        pochtaSel = new pochtaSelected(),
+        idSelectCheckbox;
    // $('.alert-info').hide();
-    var pochtaSel = new pochtaSelected();
-    var idSelectCheckbox;
+    
     console.log("start script routecreation.js");
     // $('input:checkbox').each(function (indx, element) {
     //     var checkLoadText = $(element).parent('label').text();
@@ -361,7 +363,7 @@ $(document).ready(function () {
                     $('.alert-info').append(str+ ". ");
                 }
                 $('.alert-info').append("<br />"+"Время выезда из гаража: "+routeAll[i].timeDeparture);
-                $('.alert-info').append("<br />"+"Время обмена: "+routeAll[i].timeSharing);
+                // $('.alert-info').append("<br />"+"Время обмена: "+routeAll[i].timeSharing);
                 $('.alert-info').append("<br />"+"Продолжительность перерыва: "+routeAll[i].timeDurationBreak);
             }
         });
@@ -428,13 +430,13 @@ $(document).ready(function () {
                     console.log("data ", data);
                     alert("Exsel файл сгенерирован");
                     $('#loading-indicator').hide("slow",function () {
-                        //location.reload();
+                        //setTimeout(function(){location.reload();},500);
                     });
                 },2000)
             },
             error: function () {
                 alert("Ошибка ! Попробуйте выполнить операцию еще раз или обратитесь к администратору. ")
-                //location.reload();
+                //setTimeout(function(){location.reload();},500);
             }
         })
     })

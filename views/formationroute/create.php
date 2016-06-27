@@ -78,7 +78,7 @@ AppCreate::register($this);
                 <label for="duration-break">Продолжительность перерыва</label>
             </div>
             <div class="col-xs-12 col-sm-6 col-md-4 col-lg-4 timetransport">
-                <input type="text"  id="route-name" name="routename" value="Первомайск" placeholder="Название маршрута">
+                <input type="text"  id="route-name" name="routename" value="<?=$postoffices['nameoffices'];?>" placeholder="Название маршрута">
             </div>
          </div>
     </li>
