@@ -176,11 +176,34 @@ body.loading .modalajax {
     color: #0e5a96;
     text-decoration: none;
 }
-.panel-title.delPochta>a:hover{
+.panel-title.attentionDel>a:hover{
     color: #ff6348;
     text-decoration: none;
 }
-.panel-title.delPochta>a:active{
+.panel-title.attentionDel>a:active{
     color: #ff4836;
     text-decoration: none;
+}
+.tooltip {
+    position: relative;
+    display: inline-block;
+    border-bottom: 1px dotted black;
+}
+
+.del-pochta .tooltiptext {
+    visibility: hidden;
+    width: 120px;
+    background-color: black;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
+
+    /* Position the tooltip */
+    position: absolute;
+    z-index: 1;
+}
+
+.del-pochta:hover .tooltiptext {
+    visibility: visible;
 }

@@ -6,9 +6,7 @@ $(document).ready(function () {
         count = 0,
         pochtaSel = new pochtaSelected(),
         idSelectCheckbox;
-   // $('.alert-info').hide();
-    
-    console.log("start script routecreation.js");
+    //console.log("start script routecreation.js");
     // $('input:checkbox').each(function (indx, element) {
     //     var checkLoadText = $(element).parent('label').text();
     //     checkLoadText = $.trim(checkLoadText);
@@ -22,7 +20,7 @@ $(document).ready(function () {
     //     }
     //
     // });
-        /*
+    /*
     * выбор почтовых отделений
     */
     function pochtaSelected() {
@@ -426,17 +424,16 @@ $(document).ready(function () {
             success: function (data) {
                 setTimeout(function () {
                     //TODO
-                    //что возвращаем
                     console.log("data ", data);
                     alert("Exsel файл сгенерирован");
                     $('#loading-indicator').hide("slow",function () {
-                        //setTimeout(function(){location.reload();},500);
+                        setTimeout(function(){location.reload();},500);
                     });
                 },2000)
             },
             error: function () {
                 alert("Ошибка ! Попробуйте выполнить операцию еще раз или обратитесь к администратору. ")
-                //setTimeout(function(){location.reload();},500);
+                setTimeout(function(){location.reload();},500);
             }
         })
     })

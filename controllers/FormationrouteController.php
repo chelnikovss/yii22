@@ -397,6 +397,11 @@ class FormationrouteController extends Controller
                 }
                 return true;
             }
+            if(Yii::$app->request->post('dataForChange')){
+
+                return 1;
+
+            }
         }
     }
 
