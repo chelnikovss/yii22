@@ -168,6 +168,9 @@ body.loading .modalajax {
 .pd-rg{
     margin-right: 10px;
 }
+.pd-lf{
+    margin-left: 10px;
+}
 .panel-title>a:hover{
     color: #1374c1;
     text-decoration: none;

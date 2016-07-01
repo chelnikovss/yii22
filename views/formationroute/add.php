@@ -159,20 +159,9 @@ AppAdd::register($this);
                 </div>
                 <div class="row">
                     <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-                        <form class="matrx-formDel" role="form">
-                            <div class="row">
-                                <table class="table table-hover">
-                                    <thead>
-                                    <tr>
-                                        <th>№</th>
-                                        <th>Почтовый центр</th>
-                                        <th>Название почтового отделения</th>
-                                        <th><span class="glyphicon glyphicon-wrench"></span></th>
-                                    </tr>
-                                    </thead>
-                                    <tbody id="matrx-seeChange"></tbody>
-                                </table>
-                            </div>
+                        <form class="matrx-formChange" role="form">
+                            <div class="well"><h4>Расстояния между почтовыми отделениями</h4></div>
+                            <div class="row row-eq-height" id="matrx-seeChange"></div>
                         </form>
                     </div>
                 </div>

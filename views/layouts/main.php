@@ -36,15 +36,15 @@ AppAsset::register($this);
     echo Nav::widget([
         'options' => ['class' => 'navbar-nav navbar-right'],
         'items' => [
-            ['label' => 'Расчет маршрута', 'url' => ['/site/main']],
+            //['label' => 'Расчет маршрута', 'url' => ['/site/main']],
 //            ['label' => 'Home', 'url' => ['/site/index']],
             ['label' => 'Формирование маршрута', 'url' => ['/formationroute/choose']],
-            ['label' => 'Стандартные маршруты', 'url' => ['/route/gtroutes']],
+            //['label' => 'Стандартные маршруты', 'url' => ['/route/gtroutes']],
             ['label' => 'Добавление маршрутов', 'url' => ['/formationroute/add']],
             // ['label' => 'About', 'url' => ['/site/about']],
-            ['label' => 'Contact', 'url' => ['/site/contact']],
+//            ['label' => 'Contact', 'url' => ['/site/contact']],
 
-            Yii::$app->user->isGuest ? (
+           /* Yii::$app->user->isGuest ? (
                 ['label' => 'Login', 'url' => ['/site/login']]
             ) : (
                 '<li>'
@@ -55,7 +55,7 @@ AppAsset::register($this);
                 )
                 . Html::endForm()
                 . '</li>'
-            )
+            )*/
         ],
     ]);
     NavBar::end();

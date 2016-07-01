@@ -2,6 +2,7 @@
 use yii\helpers\Html;
 $this->title = "Формирование маршрута";
 $this->params['breadcrumbs'][] = $this->title;
+
 ?>
 <h2>Формирование маршрута</h2>
 <?= Html::beginForm(['formationroute/create', ], 'post') ?>

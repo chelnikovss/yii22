@@ -182,8 +182,7 @@ $(document).ready(function () {
 
     });
 
-
-    $("#create-route").click(function (e) {
+    $("#create-route").click(function () {
         console.log("#create-routes");
         if(clickToogle==1)
         {
@@ -386,22 +385,27 @@ $(document).ready(function () {
         }
     });
 
-    /*
+     /*
      * Удаляем данные с формы и обнуляем переменные
      */
-    $("#add-new-route").click(function () {
+    $("#add-new-route").on('click', function () {
         console.log("click function #add-new-route");
         clickToogle--;
         $("#mainform")[0].reset();
         count = 0;
-        $('.checkbox>span').text("");
+        //$('.checkbox>span').text("");
+        $('.seeSelect').text('').removeClass('seeSelect');
         idSelectCheckbox.length = 0;
         $(".pochta-input").attr("data-count" , '');
         $('option', '#place-break').not(':eq(0)').remove();
         $('.placebreak').addClass('placebreak-hide');
         $("html, body").animate({ scrollTop: 0 }, "slow");
+
         $('#create-route').show("slow");
-    })
+        $(this).addClass('btn-disable');
+        //TODO
+        $('#shape-schedule').addClass('btn-disable');
+    });
 
     /*
     *
@@ -427,7 +431,9 @@ $(document).ready(function () {
                     console.log("data ", data);
                     alert("Exsel файл сгенерирован");
                     $('#loading-indicator').hide("slow",function () {
-                        setTimeout(function(){location.reload();},500);
+                        setTimeout(function(){
+                            location.reload();
+                        },500);
                     });
                 },2000)
             },
@@ -439,10 +445,9 @@ $(document).ready(function () {
     })
     /*
     *
-     */
+    */
     $("input[name='typestransport']").change(function(){
         $('.row.transport').removeClass('typestransport');
     });
-
 
 });

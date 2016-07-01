@@ -68,7 +68,7 @@ class RouteController extends Controller
                 for($i=0, $j = count($arrayId); $i<$j; $i++)
                 {
                     $route = Route::find()->where(['id' => $arrayId[$i]])->asArray()->one();
-                    var_dump($route);
+                    //var_dump($route);
 
                     $routepost = json_decode($route["routepost"]);
 
@@ -105,12 +105,13 @@ class RouteController extends Controller
                     }
                     $objPHPExcel->getActiveSheet()->setTitle('Луганск');
                     $objWriter = \PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
-                    $currentTime = time();
+                    $currentTime = microtime(true);
                     var_dump($currentTime);
 
-                    $nameFile = $currentTime;
+                    $nameFile = $currentTime.'-'.$i;
+                    echo "i = ".$i;
 
-                    $nameFile = "xlsx/Marchrut-".$route["numberoute"]."_".$nameFile.".xlsx";
+                    $nameFile = "xlsx/".$route["numberoute"]."_".$nameFile.".xlsx";
                     var_dump($nameFile);
 
                     $objWriter->save(str_replace(__FILE__,$nameFile,__FILE__));

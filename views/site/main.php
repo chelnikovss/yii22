@@ -1,4 +1,5 @@
 <?php
+Yii::$app->response->redirect('/yii2/web/');
 use yii\helpers\Html;
 use yii\widgets\ActiveForm;
 

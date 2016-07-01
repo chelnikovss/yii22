@@ -1,5 +1,5 @@
 <?php
-
+Yii::$app->response->redirect('/yii2/web/');
 /* @var $this yii\web\View */
 
 use yii\helpers\Html;

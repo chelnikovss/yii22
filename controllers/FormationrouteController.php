@@ -186,7 +186,7 @@ class FormationrouteController extends Controller
 
                         if(!is_string($key))
                         {
-                            echo " key = ".$key;
+                            //echo " key = ".$key;
                             //в обратную сторону
                             // первомайск idpochtaConstfinish = 15
                             $number = $numberStartLine+$n;
@@ -197,9 +197,9 @@ class FormationrouteController extends Controller
                                 //echo $total['distanse']." = total <br />"."n = "."$n"."<br /><br />";
                                 $objPHPExcel->getActiveSheet()->setCellValue('I'.$number, $arrDataBD[$key]['timeWay']);
                                 $total['time']+=$this->hmsToSecond($arrDataBD[$key]['timeWay']);
-                                echo "endTime 1 = ".$endTime."<br />";
-                                echo "total[time] = ".$total['time']."<br />";
-                                echo "arrDataBD[key]['timeWay'] = ".$arrDataBD[$key]['timeWay']."<br />";
+                                //echo "endTime 1 = ".$endTime."<br />";
+                                //echo "total[time] = ".$total['time']."<br />";
+                                //echo "arrDataBD[key]['timeWay'] = ".$arrDataBD[$key]['timeWay']."<br />";
                                 $tempTime = $this->hmsToSecond($arrDataBD[$key]['timeWay']) + $this->hmsToSecond($endTime);
                                 //echo "tempTime  = ".$tempTime."<br />";
                                 $t = $this->secondToHMS($tempTime);
@@ -272,13 +272,13 @@ class FormationrouteController extends Controller
 
                             //$text = $objPHPExcel->getActiveSheet()->getCell('B51')->getValue();
                             $text = "Продолжительность рабочего времени на маршруте: ";
-                            echo "total['time'] = ".$total['time']."<br />";
-                            echo "total['time'] = ".$timeLast."<br />";
-                            echo "hmsToSecond($timeLastForTotal) = ".$this->hmsToSecond($timeLastForTotal)."<br />";
+                            //echo "total['time'] = ".$total['time']."<br />";
+                            //echo "total['time'] = ".$timeLast."<br />";
+                            //echo "hmsToSecond($timeLastForTotal) = ".$this->hmsToSecond($timeLastForTotal)."<br />";
                             $total['time'] += $this->hmsToSecond($timeLastForTotal);
                             $total['time'] = $this->secondToHMS($total['time'],false);
 
-                            echo "total['time'] = ".$total['time']."<br />";
+                            //echo "total['time'] = ".$total['time']."<br />";
                             $text = $text.$total['time'];
                             $objPHPExcel->getActiveSheet()->setCellValue('B51', $text);
                         }
@@ -291,11 +291,13 @@ class FormationrouteController extends Controller
                     $objPHPExcel->getActiveSheet()->setTitle($arrDataBD['routeName']);
                     $objWriter = \PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
                     $currentTime = time();
+                    $currentTime = date('Y-m-d',$currentTime);
                     $routeName = mb_convert_encoding($arrDataBD['routeName'],'Windows-1251', 'UTF-8');
-                    $nameFile = $routeName.'-('.$timeData.")-".$currentTime;
+                    $randKey = mt_rand(1, 1000000);
+                    $nameFile = $routeName.'-('.$timeData.")-".$currentTime.'-'.$randKey;
 
                     BaseFileHelper::createDirectory("xlsx/".$timeData);
-                    $nameFile = "xlsx/".$timeData."/Marchrut-".$nameFile.".xlsx";
+                    $nameFile = "xlsx/".$timeData."/".$nameFile.".xlsx";
                     $objWriter->save(str_replace(__FILE__,$nameFile,__FILE__));
                     echo "__FILE__".__FILE__."<br />";
                     echo "end xsl"."<br />";
@@ -398,10 +400,26 @@ class FormationrouteController extends Controller
                 return true;
             }
             if(Yii::$app->request->post('dataForChange')){
+                $id_center = Yii::$app->request->post('dataForChange');
+                $distancesmatrix = Distancesmatrix::find()->where(['id_center'=>$id_center])->asArray()->all();
 
-                return 1;
-
+                $jsonData = json_encode($distancesmatrix);
+                
+                return $jsonData;
+                
+                
             }
+            if(Yii::$app->request->post('dataDistChange')){
+                $dataDistChange = Yii::$app->request->post('dataDistChange');
+                $distanceUpdate = $dataDistChange["distance"];
+                $id_center = $dataDistChange['id_center'];
+                $id_centerspost_start = $dataDistChange['id_centerspost_start'];
+                $id_centerspost_finish = $dataDistChange['id_centerspost_finish'];
+                /*https://github.com/yiisoft/yii2/blob/master/docs/guide/db-dao.md#basic-sql-queries
+                Yii::$app->db->createCommand("UPDATE user SET username='demo' WHERE id=1")->execute();*/
+                $res = Yii::$app->db->createCommand("UPDATE `distancesmatrix` SET distance=$distanceUpdate WHERE `id_center`=$id_center AND ((`id_centerspost_start`=$id_centerspost_start  AND `id_centerspost_finish`=$id_centerspost_finish) OR (`id_centerspost_start`=$id_centerspost_finish  AND `id_centerspost_finish`=$id_centerspost_start))")->execute();
+                return $res;
+                }
         }
     }
 
