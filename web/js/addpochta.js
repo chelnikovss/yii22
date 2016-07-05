@@ -34,7 +34,6 @@ $(document).ready(function () {
             }
             var erModal = bootbox.alert({
                 message: message,
-                //callback: function() {}
             });
             erModal.find('.modal-content').css({'background-color':'#D69291','color':'#2B2323'});
             return;
@@ -52,13 +51,13 @@ $(document).ready(function () {
                 if(data)
                 {
                     alert("Данные успешно добавленны в базу");
-                    setTimeout(function(){location.reload();},500);
+                    reloadPage(500);
 
                 }
                 else
                 {
                     alert("Ошибка ! Попробуйте выполнить операцию еще раз или обратитесь к администратору. ");
-                    //location.reload();
+                    reloadPage(500);
                 }
 
             },
@@ -111,7 +110,7 @@ $(document).ready(function () {
                         }
                     }
                     console.log("before add distance allRouteMatrix:",allRouteMatrix);
-                    //location.reload();
+                    location.reload();
                 }
                 else
                 {
@@ -121,7 +120,7 @@ $(document).ready(function () {
                         return;
                     }
                     alert("Ошибка ! Попробуйте выполнить операцию еще раз или обратитесь к администратору. ");
-                    //location.reload();
+                    location.reload();
                 }
             },
             error:  function () {
@@ -164,12 +163,12 @@ $(document).ready(function () {
                 if(data)
                 {
                     alert("Данные успешно добавленны в базу");
-                    //setTimeout(function(){location.reload();},500);
+                    reloadPage(500);
                 }
                 else
                 {
                     alert("Ошибка ! Попробуйте выполнить операцию еще раз или обратитесь к администратору. ");
-                    //setTimeout(function(){location.reload();},500);
+                    reloadPage(500);
                 }
             },
             error: function () {
@@ -199,9 +198,9 @@ $(document).ready(function () {
             }
         });
         function handleData(data){
-            console.log("data from server");
+            //console.log("data from server");
             allPochtaOffice = JSON.parse(data);
-            console.log('allPochtaOffice: ',allPochtaOffice);
+            //console.log('allPochtaOffice: ',allPochtaOffice);
             setTimeout(function(){
             console.log("handleData");
                  $('#loading-indicator').hide(500, function(){ $('#accordion').show(); });
@@ -250,7 +249,6 @@ $(document).ready(function () {
                 }
                 else
                 {
-                    //$('#accordion').hide(500, function(){ $('#loading-indicator').show(); console.log("show loading-indicator");});
                     var url = '?r=formationroute/addpochta';
                     $.ajax({
                         type: "POST",
@@ -269,12 +267,12 @@ $(document).ready(function () {
             if(data||data.length>0)
             {
                 alert("Почтовое отделение успешно удаленно !");
-                setTimeout(function(){location.reload();},500);
+                reloadPage(500);
             }
             else
             {
                 alert("Ошибка ! Попробуйте выполнить операцию еще раз или обратитесь к администратору. ");
-                setTimeout(function(){location.reload();},500);
+                reloadPage(500);
             }
 
         };
@@ -288,7 +286,7 @@ $(document).ready(function () {
             else
             {
                 alert("Ошибка ! Попробуйте выполнить операцию еще раз или обратитесь к администратору. ");
-                setTimeout(function(){location.reload();},500);
+                reloadPage(500);
             }
         };
     })
@@ -328,8 +326,6 @@ $(document).ready(function () {
             {
                 let  dataForChange = JSON.stringify(allPochtaOffice[i]);
                 allRouteMatrixChange[allPochtaOffice[i].idistancesmatrix] = allPochtaOffice[i];
-
-                //console.log('dataForChange :',dataForChange);
                 $('#matrx-seeChange').append('<div class="col-xs-12 col-sm-12 col-md-6 col-lg-6"><div class="row row-eq-height "><div class="col-xs-5 col-sm-5 col-md-5 col-lg-5"><span class="label label-warning pd-rg">'+(i+1)+'</span>'+allPochtaOffice[i].start+'<span class="glyphicon glyphicon-arrow-right pd-lf"></span></div><div class="col-xs-2 col-sm-2 col-md-2 col-lg-2"><button type="button" data-idmatrx='+allPochtaOffice[i].idistancesmatrix+' data-forchange='+dataForChange+' class="btn btn-link btnChanges">'+allPochtaOffice[i].distance+'</button></div><div class="col-xs-5 col-sm-5 col-md-5 col-lg-5"><span class="glyphicon glyphicon-arrow-left pd-rg"></span>'+allPochtaOffice[i].finish+'</div></div></div>')
             }
         }
@@ -337,7 +333,6 @@ $(document).ready(function () {
 
     $(document).on('click','.btnChanges', function (e) {
         var $e = e.target;
-        //console.log($e);
         var id = $($e).data('idmatrx');
         var dataAll = allRouteMatrixChange[id];
         console.log("1 dataAll:",dataAll);
@@ -365,11 +360,8 @@ $(document).ready(function () {
                 }
                 else
                 {
-
-                    console.log("result: ",result);
-                    //var r = result;
-                    result = $.trim(result);
-
+                    console.log("result: ",result,"typeof:" ,typeof result);
+                    result = Number($.trim(result));
                     if(!Number.isInteger(result))
                     {
                         alert("Ошибка при вводе расстояния! '"+result+"' Попробуйте еще раз или обратитесь к администратору.");
@@ -377,9 +369,6 @@ $(document).ready(function () {
                         return;
                     }
                     dataAll.distance = result;
-
-                    console.log("2 dataAll: ",dataAll);
-
 
                     var url = '?r=formationroute/addpochta';
 
@@ -393,24 +382,21 @@ $(document).ready(function () {
                      {
                          allRouteMatrixChange[id].distance = result;
                          console.log("Количестово затронутых строк:",data)
-
                          alert("Изменение расстояния произошло успешно");
-
-                         //$($e).css({'pointer-events': 'none'});
                          $($e).parent().parent().css({'background-color':'rgba(148,222,149,.5)'});
                          $($e).html(result)
-                     //location.reload();
+                     location.reload();
                      }
                      else
                      {
-                     alert("Ошибка ! При изменении расстояния  произошла ошибка !" );
-                     //location.reload();
+                        alert("Ошибка ! При изменении расстояния  произошла ошибка !" );
+                        reloadPage(500);
                      }
 
                      },
                      error: function () {
-                     alert("Ошибка ! Попробуйте выполнить операцию еще раз или обратитесь к администратору. ")
-                     //location.reload();
+                        alert("Ошибка ! Попробуйте выполнить операцию еще раз или обратитесь к администратору. ")
+                        reloadPage(500);
                      }
                      });
                 };

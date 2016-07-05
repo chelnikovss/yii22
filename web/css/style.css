@@ -103,7 +103,7 @@ body.loading .modalajax {
     padding-bottom:5px;
 }
 .seeSelect{
-    color: lightseagreen;
+    color: #31b0d5;
     font-weight: bold;
 }
 
@@ -128,9 +128,13 @@ body.loading .modalajax {
     -moz-animation:    typestransport  1s infinite;
     -webkit-animation: typestransport  1s infinite;
 }
-
+.oneaimation{
+    animation:         typestransport  1s 1;
+    -moz-animation:    typestransport  1s 1;
+    -webkit-animation: typestransport  1s 1;
+}
 /*Button disabled - CSS color class*/
-.btn-disable
+.btn-disable, .btn-disable2
 {
     cursor: default;
     pointer-events: none;
@@ -147,7 +151,7 @@ body.loading .modalajax {
     display: none;
 }
 .chosen-status{
-    background: rgba(32,178,170,.4);
+    background: rgba(3,169,244,.5);
 
 }
 .panel-heading a:after {

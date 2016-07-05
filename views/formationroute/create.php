@@ -29,9 +29,9 @@ AppCreate::register($this);
             <?php foreach ($postcenters as $office): ?>
                        <div class="col-xs-6 col-sm-6 col-md-4 col-lg-3 checkbox amendment">
                               <div class="row">
-                                  <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                                  <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12" style="height: 35px;">
                                       <?=Html::checkbox('pochta',false, ['label'=>$office->namepochta,'id' => $office->idcenterspost,'class' =>"pochta-input",'data-adress' => $office->adress]);?>
-                                      <?=Html::tag('span','',['id'=>'choicepochta'.$office->idcenterspost]) ;?>
+                                      <?=Html::tag('p','',['id'=>'choicepochta'.$office->idcenterspost]) ;?>
                                   </div>
                               </div>
                            <div class="row">

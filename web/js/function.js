@@ -153,6 +153,9 @@ function addParametersrouteComingDeparture(startTime, data, offices) {
     }
 }
 
+function reloadPage(time) {
+    setTimeout(function(){location.reload();},time);
+}
 
 var locationsMain=[
     {

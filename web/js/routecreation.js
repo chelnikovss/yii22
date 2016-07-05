@@ -7,37 +7,41 @@ $(document).ready(function () {
         pochtaSel = new pochtaSelected(),
         idSelectCheckbox;
     //console.log("start script routecreation.js");
-    // $('input:checkbox').each(function (indx, element) {
-    //     var checkLoadText = $(element).parent('label').text();
-    //     checkLoadText = $.trim(checkLoadText);
-    //     console.log(checkLoadText)
-    //     if(checkLoadText == 'Луганск ЦОПП')
-    //     {
-    //         $(element).trigger('click');
-    //         pochtaSel.checkItem(element);
-    //         idSelectCheckbox = pochtaSel.getSelectedItems(element);
-    //         return false;
-    //     }
-    //
-    // });
+    $('input:checkbox').each(function (indx, element) {
+        var checkLoadText = $(element).parent('label').text();
+        checkLoadText = $.trim(checkLoadText);
+        console.log(checkLoadText)
+        if(checkLoadText == 'Луганск ЦОПП')
+        {
+            console.log('element',element,'elementId',element.id);
+            $(element).prop({'checked':'true' ,'disabled':'true'});
+            pochtaSel.checkItem(element,0);
+            idSelectCheckbox = pochtaSel.getSelectedItems(element);
+            return false;
+        }
+
+    });
     /*
     * выбор почтовых отделений
     */
     function pochtaSelected() {
         count = 0;
        this.routeInputId = [];
-       this.checkItem = function (event) {
-
-           this.event = event;
-           let id = this.event.target.id;
-           console.log("this.event.target.id:",this.event.target.id);
+       this.checkItem = function (event,flag = 1) {
+           var id;
+           this.data = event;
+           if(flag)
+               id = this.data.target.id;
+           else
+               id = event.id;
+           console.log("id:",id);
            let text = $('#'+id).parent('label').text();
            text = $.trim(text);
 
            if($('#'+id).prop("checked"))
            {
                count++;
-               this.addPlaceBreak(this.event.target.id);
+               this.addPlaceBreak(id);
                    if(text == 'Луганск Центральная касса')
                    {
                        if($('#'+id).attr('data-count'))
@@ -60,11 +64,11 @@ $(document).ready(function () {
            }
            else
            {
-               this.deletePlaceBreak(this.event.target.id);
+               this.deletePlaceBreak(id);
                 //выходим если снимаем отметку с Луганской центральной кассы
                 if(text == 'Луганск Центральная касса')
                 {
-                    console.log("Ничего не делаем", "text:", text);
+                    console.log("Ничего не делаем", text);
                     return;
                 }
 
@@ -84,9 +88,8 @@ $(document).ready(function () {
                                     console.log("countOld",countOld);
                                     countOld -=1;
                                     $('#'+this.id).attr('data-count',countOld);
-                                    $('#choicepochta'+this.id).text(' __ № '+countOld)
-                                    console.log("this.id",this.id);
-                                    console.log("countOld",countOld);
+                                    $('#choicepochta'+this.id).text(' № '+countOld)
+                                    console.log("this.id",this.id,"countOld",countOld);
                                }
                            }
                            else
@@ -94,7 +97,7 @@ $(document).ready(function () {
                                let countOld = $('#'+this.id).attr('data-count');
                                let countOldArr  = new Array();
                                countOldArr = countOld.split("|");
-                               for (i in countOldArr)
+                               for (let i in countOldArr)
                                {
                                    if(countOldArr[i]>countStart)
                                    {
@@ -105,7 +108,8 @@ $(document).ready(function () {
                                console.log("countOldArr",countOldArr);
                                let countNew = countOldArr.join("|");
                                $('#'+this.id).attr('data-count',countNew);
-                               $('#choicepochta'+this.id).text(' __ № '+countNew)
+                               $('#choicepochta'+this.id).text(' № '+countNew);
+
                            }
                        }
                    }
@@ -115,14 +119,13 @@ $(document).ready(function () {
                    $('.amendment').addClass('typestransport');
            }
 
-           //console.log($(this.event.target).data('numberoute'));
-           if(jQuery.inArray(this.event.target.id, this.routeInputId) == -1)
+           if(jQuery.inArray(id, this.routeInputId) == -1)
            {
-               this.routeInputId.push(this.event.target.id);
+               this.routeInputId.push(id);
            }
            console.log(this.routeInputId);
            //console.log(this.routeInputId);
-           this.seeChoice(this.event.target.id);
+           this.seeChoice(id);
 
        };
        this.getSelectedItems = function () {
@@ -136,6 +139,13 @@ $(document).ready(function () {
                }
            }
            console.log("checkInput after check",checkInput);
+           if(checkInput.length>2){
+               console.log("checkInput.length",checkInput.length);
+               $('.row .typestransport').removeClass('typestransport');
+               setTimeout(function () {
+                   $('.checkbox.amendment').addClass('oneaimation');
+               },1000)
+           }
            return checkInput;
        };
 
@@ -148,17 +158,16 @@ $(document).ready(function () {
                if(text == 'Луганск Центральная касса')
                {
                    console.log("== Луганск Центральная касса", text);
-                   $('#choicepochta'+id).append(' __ № '+count).addClass("seeSelect");
+                   $('#choicepochta'+id).append(' <span class="glyphicon glyphicon-ok">№'+count+'</span>').addClass("seeSelect");
                }
                else
                {
-                   $('#choicepochta'+id).text(' __ № '+count).addClass("seeSelect");
-
+                   $('#choicepochta'+id).append('<span class="glyphicon glyphicon-ok">№'+count+'</span>').addClass("seeSelect");
                }
                $('#'+id).parent('label').addClass('chosen-status');
            }
 
-           console.log("'choicepochta'+this.event.target.id",'choicepochta'+this.event.target.id)
+           console.log('choicepochta .id','choicepochta'+id)
        }
        this.addPlaceBreak = function (id) {
            let text = $('#'+id).parent('label').text();
@@ -176,7 +185,7 @@ $(document).ready(function () {
    }
 
     $("input.pochta-input").click(function(event) {
-        console.log("event",event);
+        console.log("click,input.pochta-input","event",event);
         pochtaSel.checkItem(event);
         idSelectCheckbox = pochtaSel.getSelectedItems(event);
 
@@ -268,7 +277,6 @@ $(document).ready(function () {
         addPochta.typeStransportName = typeStransportNameTemp;
         addPochta.date = $('h2').attr('data-tdate');
         addPochta.arrPochta = [];
-        //console.log("addPochta:", addPochta,"idSelectCheckbox:", idSelectCheckbox);
         for(let i = 0, len = idSelectCheckbox.length; i<len; i++)
         {
             let Pochta = {};
@@ -315,13 +323,12 @@ $(document).ready(function () {
             }
         }
         addPochta.timeDeparture = $('#time-departure').val();
-        //addPochta.timeSharing = $('#time-sharing').val();
         addPochta.placeBreakIdPochta = $('#place-break').val();
         addPochta.timeDurationBreak = $('#duration-break').val();
         routeAll.push(addPochta);
         console.log("addPochta:",addPochta,"routeAll:",routeAll);
         var nameRouteStart = $('#route-name').val();
-        for(i in addPochta.arrPochta)
+        for(let i in addPochta.arrPochta)
         {
             if(addPochta.arrPochta[i].serialnumber == 2)
             {
@@ -332,38 +339,41 @@ $(document).ready(function () {
         addPochta.routeName = $('#route-name').val();
         //end get data from form
 
-        $('#add-new-route').removeClass('btn-disable').animate({'opacity':'.5'},750,function () {
-            $('#add-new-route').animate({'opacity':'1'},750);
-        });
-        $('#shape-schedule').removeClass('btn-disable').animate({'opacity':'.5'},750,function () {
-            $('#shape-schedule').animate({'opacity':'1'},750);
-            $('.alert-info').text("");
-            for(var i=0, len = routeAll.length; i<len; i++)
-            {
-                if (i == 0)
-                {
-                    $('.alert-info').append("Маршрут № "+(i+1)+"<br />");
-                }
-                else
-                {
-                    $('.alert-info').append("<br /><br />"+"Маршрут № "+(i+1)+"<br />");
-                }
-                $('.alert-info').append("Название маршрута: "+routeAll[i].routeName+"<br />");
+        $('#add-new-route').removeClass('btn-disable').animate({'opacity':'.5'},400,function () {
+            $(this).animate({'opacity':'1'},400).show('500',function () {
+                $('#shape-schedule').removeClass('btn-disable').animate({'opacity':'.5'},400,function () {
+                    $(this).animate({'opacity':'1'},400).show(400,function () {
+                        var $alrtInfo = $('.alert-info');
+                        $alrtInfo.text("");
+                        for(var i = 0, len = routeAll.length; i<len; i++)
+                        {
+                            if (i == 0)
+                            {
+                                $alrtInfo.append("Маршрут № "+(i+1)+"<br />");
+                            }
+                            else
+                            {
+                                $alrtInfo.append("<br /><br />"+"Маршрут № "+(i+1)+"<br />");
+                            }
+                            $alrtInfo.append("Название маршрута: "+routeAll[i].routeName+"<br />"+routeAll[i].typeStransportName+" : "+routeAll[i].typeStransport+"<br />");
 
-                $('.alert-info').append(routeAll[i].typeStransportName+" : "+routeAll[i].typeStransport+"<br />");
-                routeAll[i].arrPochta.sort(function (a,b) {
-                    return parseFloat(a.serialnumber) - parseFloat(b.serialnumber)
+                            routeAll[i].arrPochta.sort(function (a,b) {
+                                return parseFloat(a.serialnumber) - parseFloat(b.serialnumber)
+                            });
+                            for(let j = 0, len2 = routeAll[i].arrPochta.length; j<len2; j++)
+                            {
+                                let str = routeAll[i].arrPochta[j].serialnumber +") "+routeAll[i].arrPochta[j].name;
+                                $alrtInfo.append(str+ ". ");
+                            }
+                            $alrtInfo.append("<br />"+"Время выезда из гаража: "+routeAll[i].timeDeparture+"<br />"+"Продолжительность перерыва: "+routeAll[i].timeDurationBreak).append();
+                        }
+                    });
+
                 });
-                for(let j = 0, len2 = routeAll[i].arrPochta.length; j<len2; j++)
-                {
-                    let str = routeAll[i].arrPochta[j].serialnumber +") "+routeAll[i].arrPochta[j].name;
-                    $('.alert-info').append(str+ ". ");
-                }
-                $('.alert-info').append("<br />"+"Время выезда из гаража: "+routeAll[i].timeDeparture);
-                // $('.alert-info').append("<br />"+"Время обмена: "+routeAll[i].timeSharing);
-                $('.alert-info').append("<br />"+"Продолжительность перерыва: "+routeAll[i].timeDurationBreak);
-            }
+            });
+
         });
+
         clickToogle++;
         $('#create-route').hide("slow");
         
@@ -372,23 +382,24 @@ $(document).ready(function () {
     * окраска селекта для юзера
     */
     $("#place-break").click(function () {
-        console.log("#place-break click")
-        if($('#place-break').val() == -1)
+        console.log("#place-break click");
+        var $this = $(this);
+        if($this.val() == -1)
         {
             $('.placebreak').addClass('placebreak-hide');
-            $('#place-break').addClass('typestransport');
+            $this.addClass('typestransport');
         }
         else
         {
             $('.placebreak').removeClass('placebreak-hide');
-            $('#place-break').removeClass('typestransport');
+            $this.removeClass('typestransport');
         }
     });
 
      /*
      * Удаляем данные с формы и обнуляем переменные
      */
-    $("#add-new-route").on('click', function () {
+    $('#mainform').on('click',"#add-new-route",function () {
         console.log("click function #add-new-route");
         clickToogle--;
         $("#mainform")[0].reset();
@@ -399,12 +410,30 @@ $(document).ready(function () {
         $(".pochta-input").attr("data-count" , '');
         $('option', '#place-break').not(':eq(0)').remove();
         $('.placebreak').addClass('placebreak-hide');
-        $("html, body").animate({ scrollTop: 0 }, "slow");
+        $('#create-route').show(500,function () {
+            $("html, body").animate({ scrollTop: 0 }, "slow");
+            /*$('#add-new-route').addClass('btn-disable')
+             $('#shape-schedule').addClass('btn-disable');*/
+            $('#add-new-route').hide(500);
+        });
+        $('#shape-schedule').hide(500,function () {
+            //включаем Луганск ЦОПП
+            $('input:checkbox').each(function (indx, element) {
+                console.log('включаем Луганск ЦОПП');
+                var checkLoadText = $(element).parent('label').text();
+                checkLoadText = $.trim(checkLoadText);
+                console.log(checkLoadText)
+                if(checkLoadText == 'Луганск ЦОПП')
+                {
+                    console.log('element',element,'elementId',element.id);
+                    $(element).prop({'checked':'true' ,'disabled':'true'});
+                    pochtaSel.checkItem(element,0);
+                    idSelectCheckbox = pochtaSel.getSelectedItems(element);
+                    return false;
+                }
 
-        $('#create-route').show("slow");
-        $(this).addClass('btn-disable');
-        //TODO
-        $('#shape-schedule').addClass('btn-disable');
+            });
+        });
     });
 
     /*
@@ -431,15 +460,13 @@ $(document).ready(function () {
                     console.log("data ", data);
                     alert("Exsel файл сгенерирован");
                     $('#loading-indicator').hide("slow",function () {
-                        setTimeout(function(){
-                            location.reload();
-                        },500);
+                        reloadPage(500)
                     });
                 },2000)
             },
             error: function () {
                 alert("Ошибка ! Попробуйте выполнить операцию еще раз или обратитесь к администратору. ")
-                setTimeout(function(){location.reload();},500);
+                reloadPage(500);
             }
         })
     })
