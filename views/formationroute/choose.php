@@ -1,7 +1,7 @@
 <?php
 use yii\helpers\Html;
 $this->title = "Формирование маршрута";
-$this->params['breadcrumbs'][] = $this->title;
+//$this->params['breadcrumbs'][] = $this->title;
 
 ?>
 <h2>Формирование маршрута</h2>

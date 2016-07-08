@@ -110,7 +110,7 @@ $(document).ready(function () {
                         }
                     }
                     console.log("before add distance allRouteMatrix:",allRouteMatrix);
-                    location.reload();
+                    //location.reload();
                 }
                 else
                 {

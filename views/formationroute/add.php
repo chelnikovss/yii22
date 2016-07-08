@@ -1,7 +1,7 @@
 <?php
 use yii\helpers\Html;
 $this->title = "Добавление данных";
-$this->params['breadcrumbs'][] = $this->title;
+//$this->params['breadcrumbs'][] = $this->title;
 use \app\assets\AppAdd;
 AppAdd::register($this);
 ?>
@@ -18,14 +18,6 @@ AppAdd::register($this);
             <div class="panel-body">
                 <?=Html::beginForm(['formationroute/add'],'post',['id'=>'addpochta'])?>
                 <div class="form-group">
-                    <label for="namepochtaid" class="label-width">Название почтового отделения:</label>
-                    <?=Html::input('text','namepochta','',['id' =>'namepochtaid', 'class' =>'form-control','required'=>'']);?>
-                </div>
-                <div class="form-group">
-                    <label for="adresid" class="label-width">Адрес почтового отделения:</label>
-                    <?=Html::input('text','adress','',['id' =>'adresid','class' =>'form-control'])?>
-                </div>
-                <div class="form-group">
                     <label for="numberpochta">Номер центра:</label>
                     <select class="form-control" id="numberpochta">
                         <option value="-1">Выберите номер центр</option>
@@ -35,6 +27,14 @@ AppAdd::register($this);
                         <option value="3">3 (Антрацит)</option>
                         <option value="4">4 (Краснодон)</option>
                     </select>
+                </div>
+                <div class="form-group">
+                    <label for="namepochtaid" class="label-width">Название почтового отделения:</label>
+                    <?=Html::input('text','namepochta','',['id' =>'namepochtaid', 'class' =>'form-control','required'=>'']);?>
+                </div>
+                <div class="form-group">
+                    <label for="adresid" class="label-width">Адрес почтового отделения:</label>
+                    <?=Html::input('text','adress','',['id' =>'adresid','class' =>'form-control'])?>
                 </div>
                 <button id="addpocthacenter" type="submit" class="btn btn-default">Добавить</button>
                 <?=Html::endForm();?>
