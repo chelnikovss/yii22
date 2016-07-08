@@ -142,9 +142,9 @@ $(document).ready(function () {
            if(checkInput.length>2){
                console.log("checkInput.length",checkInput.length);
                $('.row .typestransport').removeClass('typestransport');
-               setTimeout(function () {
+             /*  setTimeout(function () {
                    $('.checkbox.amendment').addClass('oneaimation');
-               },1000)
+               },1000)*/
            }
            return checkInput;
        };
@@ -460,13 +460,20 @@ $(document).ready(function () {
                     console.log("data ", data);
                     alert("Exsel файл сгенерирован");
                     $('#loading-indicator').hide("slow",function () {
-                        reloadPage(500)
+                        var dataArr = $.parseJSON(data);
+                        var j = 0;
+                        for(let i of dataArr) {
+                             j++;
+                            $('h2').append("<br /><br /><span>№" + j +" </span> <a download href=" + i + ">Скачать файл</a>");
+                        }
+                        //reloadPage(500);
+
                     });
                 },2000)
             },
             error: function () {
                 alert("Ошибка ! Попробуйте выполнить операцию еще раз или обратитесь к администратору. ")
-                reloadPage(500);
+                //reloadPage(500);
             }
         })
     })

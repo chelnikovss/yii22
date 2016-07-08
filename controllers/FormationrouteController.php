@@ -57,6 +57,7 @@ class FormationrouteController extends Controller
                 $routeAll = Yii::$app->request->post('routeAll');
                 $inputFileName = './patternxsl/pattern.xlsx';
                 $objPHPExcel = \PHPExcel_IOFactory::load($inputFileName);
+                $arrRoute = [];
                 for($i = 0, $len = count($routeAll); $i<$len; $i++)
                 {
                     $arrDataBD = [];
@@ -130,13 +131,13 @@ class FormationrouteController extends Controller
                                 // 40 км/ч = 11 м/c
                                 $timeWay = ($distance['distance']*1000)/11;
                                 $arrDataBD[] = array('idpochta' =>$route[$j]['idpochta'],'timeSharingLocal' =>$route[$j]['timeSharingLocal'], 'namepochtastart'=>$route[$k]['name'],'namepochta'=>$route[$j]['name'],'timeWay' => $this->secondToHMS($timeWay),'distance' => $distance['distance'],'idpochtaConststart'=>$idpochtaConststart,'idpochtaConstfinish'=>$idpochtaConstfinish);
-                                var_dump($arrDataBD);
+                                //var_dump($arrDataBD);
                             }
                         }
 
                     }
                     //start excel
-                    echo "start exsel";
+                    //echo "start exsel";
                     //start line in excel file
                     $numberStartLine = 19;
                     $objPHPExcel->setActiveSheetIndex(0);
@@ -245,7 +246,7 @@ class FormationrouteController extends Controller
                         }
                         if($last === $key)
                         {
-                            echo $total['distanse']." = total <br />";
+                            //echo $total['distanse']." = total <br />";
                             $total['distanse']+=$arrDataBD['typeStransportFinish'];
                             $total['distanse']+=$arrDataBD['typeStransportStart'];
                             $number+=1;
@@ -292,18 +293,53 @@ class FormationrouteController extends Controller
                     $objWriter = \PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
                     $currentTime = time();
                     $currentTime = date('Y-m-d',$currentTime);
-                    $routeName = mb_convert_encoding($arrDataBD['routeName'],'Windows-1251', 'UTF-8');
+                    //$routeName = mb_convert_encoding($arrDataBD['routeName'],'Windows-1251', 'UTF-8');
+                    $routeName = $this->transliterate($arrDataBD['routeName']);
                     $randKey = mt_rand(1, 1000000);
-                    $nameFile = $routeName.'-('.$timeData.")-".$currentTime.'-'.$randKey;
+                    $nameFile = "$routeName".'-('.$timeData.")-".$currentTime.'-'.$randKey;
 
                     BaseFileHelper::createDirectory("xlsx/".$timeData);
                     $nameFile = "xlsx/".$timeData."/".$nameFile.".xlsx";
                     $objWriter->save(str_replace(__FILE__,$nameFile,__FILE__));
-                    echo "__FILE__".__FILE__."<br />";
-                    echo "end xsl"."<br />";
+
+                    array_push($arrRoute,$nameFile);
+                    //$fileExcel = str_replace(__FILE__,$nameFile,__FILE__);
+                    //echo"start<br />";
+                    //var_dump($fileExcel);
+                   //$fileExcel = str_replace(__FILE__,$nameFile,'');
+                    //echo"end<br />";
+                    //var_dump($fileExcel);
+
+                    //$file_path = realpath(Yii::$app->request->BaseUrl . '/web');
+                    //$path = Yii::$app->basePath;
+                    //echo "path:".$path."<br />";
+                    //echo "path:".realpath($path)."<br />";
+                    //$path = realpath($path);
+                    //Yii::$app->params['uploadPath'] = realpath(Yii::$app->basePath) . '/uploads/';
+                    //$path1 = Yii::$app->params['uploadPath'] . $filename;
+                    //Yii::$app->request->BaseUrl;
+                    //$path = Yii::$app->request->BaseUrl.'/'.$nameFile;
+
+
+
+                    //$path = Yii::getAlias('@webroot');
+                    //$nameFile = "xlsx/".$timeData."/"."1.txt";
+                    //$path =$path.'/'.$nameFile;
+                    //echo "<br /><br />path : ".$path."<br /><br />";
+                    //var_dump(Yii::$app->response->sendFile($path));
+                   // $this->giveFile($path);
+
+
+                    //Yii::$app->response->sendFile($path)-send();
+                    //echo '<br />t ='.$t."<br /><br />";;
+                    //echo "__FILE__".__FILE__."<br />";
+                    //echo "end xsl"."<br />";
                     //end excel
+                    //C:\xampp\htdocs\yii2\web\xlsx\filename1.xlsx
                 }
-                return;
+                //return Yii::$app->response->sendFile($path);
+
+                return json_encode($arrRoute);
             }
         }
     }
@@ -343,7 +379,7 @@ class FormationrouteController extends Controller
             if(Yii::$app->request->post('allRouteMatrix'))
             {
                 $allRouteMatrix = Yii::$app->request->post('allRouteMatrix');
-                var_dump($allRouteMatrix);
+                //var_dump($allRouteMatrix);
                 $result = 0;
                 for($i = 0, $len = count($allRouteMatrix); $i<$len; $i++)
                 {
@@ -472,5 +508,65 @@ class FormationrouteController extends Controller
 
 
     }
+
+    function giveFile($fileName, $fileStr = "main"){
+
+        /*echo $fileName, $dirName, dirname(__FILE__);
+        $dirPath = realpath($dirName);*/
+        //echo "=".$dirPath;
+        $filePath = realpath($fileName);
+        //echo "+".$filePath;
+        if(!file_exists($filePath)){
+            echo "not ".$filePath;
+            return false;
+        }
+        if(ob_get_level()){
+            ob_end_clean();
+        }
+        header('Content-Description: File Transfer');
+        header('Content-Type: application/octet-stream');
+        header('Content-Disposition: attachment; filename='.$fileStr);
+        header('Content-Transfer-Encoding: binary');
+        header('Expires: 0');
+        header('Cache-Control: must-revalidate');
+        header('Pragma: public');
+        header('Content-Length: '.filesize($filePath));
+        flush();
+        //echo "-".$filePath;
+        if(readfile($filePath)){
+            //unlink($this->fileToDownload);
+            return true;
+        };
+    }
+
+    //
+    function transliterate($input){
+        $gost = array(
+            "Є"=>"YE","І"=>"I","Ѓ"=>"G","і"=>"i","№"=>"-","є"=>"ye","ѓ"=>"g",
+            "А"=>"A","Б"=>"B","В"=>"V","Г"=>"G","Д"=>"D",
+            "Е"=>"E","Ё"=>"YO","Ж"=>"ZH",
+            "З"=>"Z","И"=>"I","Й"=>"J","К"=>"K","Л"=>"L",
+            "М"=>"M","Н"=>"N","О"=>"O","П"=>"P","Р"=>"R",
+            "С"=>"S","Т"=>"T","У"=>"U","Ф"=>"F","Х"=>"X",
+            "Ц"=>"C","Ч"=>"CH","Ш"=>"SH","Щ"=>"SHH","Ъ"=>"'",
+            "Ы"=>"Y","Ь"=>"","Э"=>"E","Ю"=>"YU","Я"=>"YA",
+            "а"=>"a","б"=>"b","в"=>"v","г"=>"g","д"=>"d",
+            "е"=>"e","ё"=>"yo","ж"=>"zh",
+            "з"=>"z","и"=>"i","й"=>"j","к"=>"k","л"=>"l",
+            "м"=>"m","н"=>"n","о"=>"o","п"=>"p","р"=>"r",
+            "с"=>"s","т"=>"t","у"=>"u","ф"=>"f","х"=>"x",
+            "ц"=>"c","ч"=>"ch","ш"=>"sh","щ"=>"shh","ъ"=>"",
+            "ы"=>"y","ь"=>"","э"=>"e","ю"=>"yu","я"=>"ya",
+            " "=>"_","—"=>"_",","=>"_","!"=>"_","@"=>"_",
+            "#"=>"-","$"=>"","%"=>"","^"=>"","&"=>"","*"=>"",
+            "("=>"",")"=>"","+"=>"","="=>"",";"=>"",":"=>"",
+            "'"=>"","~"=>"","`"=>"","?"=>"","/"=>""
+            ,"["=>"","]"=>"","{"=>"","}"=>"","|"=>""
+  );
+
+return strtr($input, $gost);
+}
+    ///
+
 
 }
