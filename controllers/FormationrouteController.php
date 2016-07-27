@@ -47,7 +47,6 @@ class FormationrouteController extends Controller
 
         return $this->render('create',['postcenters'=>$postcenters, 'postoffices' => $postoffices]);
     }
-    
     public function actionCreatexsel()
     {
         if(Yii::$app->request->isAjax)
@@ -98,6 +97,10 @@ class FormationrouteController extends Controller
                         {
                             $arrDataBD['routeName'] =  $route;
                            // echo $arrDataBD['routeName']."<br />";
+                        }
+                        if($key == 'settlingTime')
+                        {
+                            $arrDataBD['settlingTime'] =  $route;
                         }
                         if($key == 'arrPochta')
                         {
@@ -182,6 +185,8 @@ class FormationrouteController extends Controller
                             $objPHPExcel->getActiveSheet()->setCellValue('D18', $timeLuganskCOPP);
                             $objPHPExcel->getActiveSheet()->setCellValue('E18', $endTime);
                             $objPHPExcel->getActiveSheet()->setCellValue('G18', 'Луганск Центральная касса');
+                            //учитываем 5 или 15 минут, между Луганск ЦОПП и Луганской Центральной Кассой
+                            $total['time'] += $this->hmsToSecond($start);
                             $startFormatExcelFile = false;
                         }
 
@@ -222,19 +227,38 @@ class FormationrouteController extends Controller
                                 $tempTime = $this->hmsToSecond($arrDataBD[$key]['timeWay'])+$this->hmsToSecond($endTime);
                                 $objPHPExcel->getActiveSheet()->setCellValue(($flayWay?'C':'J').$number, $this->secondToHMS($tempTime));
                                 //учитываем время перерыва
-                                if($arrDataBD['idbreak'] == $arrDataBD[$key]['idpochta'])
+                                //изменение неучитываем время перерыва - блок ниже закомметнтирован
+                                /*if($arrDataBD['idbreak'] == $arrDataBD[$key]['idpochta'])
                                 {
                                     $timeBreak = $this->hmsToSecond($arrDataBD['timebreak']) + $this->hmsToSecond($arrDataBD[$key]['timeSharingLocal']);
                                     $timeBreak = $this->secondToHMS($timeBreak);
                                     $objPHPExcel->getActiveSheet()->setCellValue('D'.$number, $timeBreak);
                                     $endTime =  $this->hmsToSecond($timeBreak) + $tempTime;
-                                    //$objPHPExcel->getActiveSheet()->setCellValue('E'.$number, $endTime);
-                                }
-                                else
+                                }*/
+                                /*else
                                 {
                                     $objPHPExcel->getActiveSheet()->setCellValue(($flayWay?'D':'K').$number, $arrDataBD[$key]['timeSharingLocal']);
                                     $endTime = $this->hmsToSecond($arrDataBD[$key]['timeSharingLocal']) + $tempTime;
+                                }*/
+                                //$arrDataBD[$key]['namepochta']
+
+                                if($arrDataBD['idbreak'] == $arrDataBD[$key]['idpochta'])
+                                {
+                                   /*$timeBreak = $this->hmsToSecond($arrDataBD['timebreak']) + $this->hmsToSecond($arrDataBD[$key]['timeSharingLocal']);
+                                   $timeBreak = $this->secondToHMS($timeBreak);
+                                   $objPHPExcel->getActiveSheet()->setCellValue('D'.$number, $timeBreak);
+                                   $endTime =  $this->hmsToSecond($timeBreak) + $tempTime;*/
+                                    $text = $arrDataBD[$key]['namepochta'];
+                                    $text.=': '.$arrDataBD['timebreak'];
+                                    $objPHPExcel->getActiveSheet()->setCellValue('G56', $text);
+
                                 }
+
+                                $objPHPExcel->getActiveSheet()->setCellValue(($flayWay?'D':'K').$number, $arrDataBD[$key]['timeSharingLocal']);
+                                $endTime = $this->hmsToSecond($arrDataBD[$key]['timeSharingLocal']) + $tempTime;
+
+
+
                                 $endTime = $this->secondToHMS($endTime);
                                 $objPHPExcel->getActiveSheet()->setCellValue(($flayWay?'E':'L').$number, $endTime);
                                 ///time end
@@ -269,7 +293,7 @@ class FormationrouteController extends Controller
                             //$text = $objPHPExcel->getActiveSheet()->getCell('B50')->getValue();
                             $text = "Протяженность маршрута ";
                             $text = $text.$total['distanse'].' км';
-                            $objPHPExcel->getActiveSheet()->setCellValue('B50', $text);
+                            $objPHPExcel->getActiveSheet()->setCellValue('B54', $text);
 
                             //$text = $objPHPExcel->getActiveSheet()->getCell('B51')->getValue();
                             $text = "Продолжительность рабочего времени на маршруте: ";
@@ -277,11 +301,19 @@ class FormationrouteController extends Controller
                             //echo "total['time'] = ".$timeLast."<br />";
                             //echo "hmsToSecond($timeLastForTotal) = ".$this->hmsToSecond($timeLastForTotal)."<br />";
                             $total['time'] += $this->hmsToSecond($timeLastForTotal);
+
                             $total['time'] = $this->secondToHMS($total['time'],false);
 
                             //echo "total['time'] = ".$total['time']."<br />";
                             $text = $text.$total['time'];
-                            $objPHPExcel->getActiveSheet()->setCellValue('B51', $text);
+                            $objPHPExcel->getActiveSheet()->setCellValue('B55', $text);
+
+                            $text ='';
+                            foreach($arrDataBD['settlingTime'] as $value)
+                            {
+                                    $text.=$value;
+                            }
+                            $objPHPExcel->getActiveSheet()->setCellValue('F57', $text);
                         }
                     }
                     $charset = 'UTF-8';
@@ -295,7 +327,7 @@ class FormationrouteController extends Controller
                     $currentTime = date('Y-m-d',$currentTime);
                     //$routeName = mb_convert_encoding($arrDataBD['routeName'],'Windows-1251', 'UTF-8');
                     $routeName = $this->transliterate($arrDataBD['routeName']);
-                    $randKey = mt_rand(1, 1000000);
+                    $randKey = Yii::$app->getSecurity()->generateRandomString(8);
                     $nameFile = "$routeName".'-('.$timeData.")-".$currentTime.'-'.$randKey;
 
                     BaseFileHelper::createDirectory("xlsx/".$timeData);
@@ -309,7 +341,6 @@ class FormationrouteController extends Controller
                    //$fileExcel = str_replace(__FILE__,$nameFile,'');
                     //echo"end<br />";
                     //var_dump($fileExcel);
-
                     //$file_path = realpath(Yii::$app->request->BaseUrl . '/web');
                     //$path = Yii::$app->basePath;
                     //echo "path:".$path."<br />";
@@ -319,17 +350,12 @@ class FormationrouteController extends Controller
                     //$path1 = Yii::$app->params['uploadPath'] . $filename;
                     //Yii::$app->request->BaseUrl;
                     //$path = Yii::$app->request->BaseUrl.'/'.$nameFile;
-
-
-
                     //$path = Yii::getAlias('@webroot');
                     //$nameFile = "xlsx/".$timeData."/"."1.txt";
                     //$path =$path.'/'.$nameFile;
                     //echo "<br /><br />path : ".$path."<br /><br />";
                     //var_dump(Yii::$app->response->sendFile($path));
                    // $this->giveFile($path);
-
-
                     //Yii::$app->response->sendFile($path)-send();
                     //echo '<br />t ='.$t."<br /><br />";;
                     //echo "__FILE__".__FILE__."<br />";
@@ -338,12 +364,10 @@ class FormationrouteController extends Controller
                     //C:\xampp\htdocs\yii2\web\xlsx\filename1.xlsx
                 }
                 //return Yii::$app->response->sendFile($path);
-
                 return json_encode($arrRoute);
             }
         }
     }
-
     public function actionAddpochta()
     {
         if(Yii::$app->request->isAjax)
@@ -402,8 +426,6 @@ class FormationrouteController extends Controller
                         $result = $res;
                         break;
                     }
-
-
                 }
                 return $result;
             }
@@ -438,12 +460,9 @@ class FormationrouteController extends Controller
             if(Yii::$app->request->post('dataForChange')){
                 $id_center = Yii::$app->request->post('dataForChange');
                 $distancesmatrix = Distancesmatrix::find()->where(['id_center'=>$id_center])->asArray()->all();
-
                 $jsonData = json_encode($distancesmatrix);
-                
                 return $jsonData;
-                
-                
+
             }
             if(Yii::$app->request->post('dataDistChange')){
                 $dataDistChange = Yii::$app->request->post('dataDistChange');
@@ -458,11 +477,12 @@ class FormationrouteController extends Controller
                 }
         }
     }
-
-
     public function actionAdd()
     {
         return $this->render('add');
+    }
+    public function actionHelp(){
+        return $this->render('help');
     }
 
     /*перевод секунд в формата времени HH:MM:SS*/
@@ -508,7 +528,6 @@ class FormationrouteController extends Controller
 
 
     }
-
     function giveFile($fileName, $fileStr = "main"){
 
         /*echo $fileName, $dirName, dirname(__FILE__);
@@ -538,7 +557,6 @@ class FormationrouteController extends Controller
             return true;
         };
     }
-
     function transliterate($input){
         
         $gost = array(

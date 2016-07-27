@@ -214,3 +214,10 @@ body.loading .modalajax {
 .del-pochta:hover .tooltiptext {
     visibility: visible;
 }
+.add-no-active-elem{
+    opacity:.5;
+    pointer-events: none;
+}
+.pd-tp{
+    padding: 10px 0 10px 0;
+}
